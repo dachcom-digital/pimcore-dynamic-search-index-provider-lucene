@@ -1,0 +1,32 @@
+{
+    "name": "dachcom-digital/dynamic-search-index-provider-lucene",
+    "type": "pimcore-bundle",
+    "license": "GPL-3.0+",
+    "description": "",
+    "keywords": ["pimcore", "search", "dynamic-search", "index-provider","lucene"],
+    "homepage": "https://github.com/dachcom-digital/pimcore-dynamic-search-index-provider-lucene",
+    "authors": [
+        {
+            "name": "DACHCOM.DIGITAL Stefan Hagspiel",
+            "email": "shagspiel@dachcom.ch",
+            "homepage": "http://www.dachcom.com/",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DsLuceneBundle\\": "src/DsLuceneBundle"
+        }
+    },
+
+    "extra": {
+        "pimcore": {
+            "bundles": [
+                "DsLuceneBundle\\DsLuceneBundle"
+            ]
+        }
+    },
+    "require": {
+        "zf1/zend-search-lucene": "~1.12"
+    }
+}

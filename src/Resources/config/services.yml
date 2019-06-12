@@ -1,0 +1,17 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsLuceneBundle\Storage\StorageBuilder: ~
+
+    DsLuceneBundle\Integrator\FieldIntegrator: ~
+
+    #
+    # Index Provider for Dynamic Search Bundle
+    #
+    DsLuceneBundle\Provider\LuceneIndexProvider:
+        tags:
+            - { name: 'dynamic_search.index_provider', alias: 'lucene' }
