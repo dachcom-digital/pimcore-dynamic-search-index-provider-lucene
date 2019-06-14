@@ -2,6 +2,7 @@
 
 namespace DsLuceneBundle\Provider;
 
+use DsLuceneBundle\DsLuceneBundle;
 use DsLuceneBundle\Integrator\FieldIntegrator;
 use DsLuceneBundle\Storage\StorageBuilder;
 use DynamicSearchBundle\Context\ContextDataInterface;
@@ -69,6 +70,20 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritDoc}
      */
+    public function cancelledShutdown(ContextDataInterface $contextData)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function emergencyShutdown(ContextDataInterface $contextData)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function executeInsert(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
         if (!$indexDocument->hasFields()) {
@@ -82,9 +97,12 @@ class LuceneIndexProvider implements IndexProviderInterface
 
         $index = $this->storageBuilder->getLuceneIndex($options['database_name']);
 
-        foreach($indexDocument->getFields() as $field) {
+        foreach ($indexDocument->getFields() as $field) {
             $this->fieldIntegrator->integrate($field, $doc);
         }
+
+        $this->logger->debug(sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $options['database_name']),
+            DsLuceneBundle::PROVIDER_NAME, $contextData->getName());
 
         $index->addDocument($doc);
 
@@ -95,7 +113,6 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function executeUpdate(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-
     }
 
     /**
@@ -103,7 +120,6 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function executeDelete(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-
     }
 
     /**
