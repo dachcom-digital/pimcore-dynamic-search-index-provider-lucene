@@ -41,8 +41,6 @@ class StorageBuilder
         $index = null;
 
         try {
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('UTF-8');
             $index = \Zend_Search_Lucene::create($indexDir);
         } catch (\Zend_Search_Exception $e) {
             throw new ProviderException(sprintf('Unable to create lucene database "%s". Error was: %s', $databaseName, $e), DsLuceneBundle::PROVIDER_NAME, $e);
@@ -102,17 +100,16 @@ class StorageBuilder
         $index->removeReference();
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     *
-     * @return \Zend_Search_Lucene_Interface
-     */
     public function getLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
     {
+        \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
+        \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('UTF-8');
+
         $indexDir = $this->createIndexDir($databaseName, $state);
 
-        return \Zend_Search_Lucene::open($indexDir);
+        $index = \Zend_Search_Lucene::open($indexDir);
+
+        return $index;
     }
 
     /**

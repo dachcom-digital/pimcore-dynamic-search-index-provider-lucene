@@ -15,3 +15,11 @@ services:
     DsLuceneBundle\Provider\LuceneIndexProvider:
         tags:
             - { name: 'dynamic_search.index_provider', alias: 'lucene' }
+
+    DsLuceneBundle\OutputChannel\AutoCompleteOutputChannel:
+        tags:
+            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'autocomplete' }
+
+    DsLuceneBundle\OutputChannel\SearchOutputChannel:
+        tags:
+            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'search' }

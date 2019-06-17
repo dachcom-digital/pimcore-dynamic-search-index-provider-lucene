@@ -11,6 +11,8 @@ use PHPStan\Type\BooleanType;
 
 final class FieldIntegrator
 {
+    const UTF8 = 'UTF-8';
+
     public function integrate(TypeInterface $type, \Zend_Search_Lucene_Document $document)
     {
         $field = null;
@@ -48,32 +50,32 @@ final class FieldIntegrator
 
     protected function generateKeywordField(TypeInterface $type)
     {
-        $field = \Zend_Search_Lucene_Field::keyword($type->getName(), $type->getValue());
-        $field->boost = $type->getBoost();
+        $field = \Zend_Search_Lucene_Field::keyword($type->getName(), $type->getValue(), self::UTF8);
+        $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
 
         return $field;
     }
 
     protected function generateTextField(TypeInterface $type)
     {
-        $field = \Zend_Search_Lucene_Field::text($type->getName(), $type->getValue());
-        $field->boost = $type->getBoost();
+        $field = \Zend_Search_Lucene_Field::text($type->getName(), $type->getValue(), self::UTF8);
+        $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
 
         return $field;
     }
 
     protected function generateUnStoredField(TypeInterface $type)
     {
-        $field = \Zend_Search_Lucene_Field::unStored($type->getName(), $type->getValue());
-        $field->boost = $type->getBoost();
+        $field = \Zend_Search_Lucene_Field::unStored($type->getName(), $type->getValue(), self::UTF8);
+        $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
 
         return $field;
     }
 
     protected function generateUnIndexedField(TypeInterface $type)
     {
-        $field = \Zend_Search_Lucene_Field::unIndexed($type->getName(), $type->getValue());
-        $field->boost = $type->getBoost();
+        $field = \Zend_Search_Lucene_Field::unIndexed($type->getName(), $type->getValue(), self::UTF8);
+        $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
 
         return $field;
     }
@@ -81,7 +83,7 @@ final class FieldIntegrator
     protected function generateBinaryField(TypeInterface $type)
     {
         $field = \Zend_Search_Lucene_Field::binary($type->getName(), $type->getValue());
-        $field->boost = $type->getBoost();
+        $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
 
         return $field;
     }

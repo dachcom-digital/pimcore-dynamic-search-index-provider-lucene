@@ -91,7 +91,9 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $doc = new \Zend_Search_Lucene_Document();
-        $doc->boost = $indexDocument->getDocumentBoost();
+        if ($indexDocument->getDocumentBoost() > 0) {
+            $doc->boost = $indexDocument->getDocumentBoost();
+        }
 
         $options = $contextData->getIndexProviderOptions();
 
@@ -104,7 +106,11 @@ class LuceneIndexProvider implements IndexProviderInterface
         $this->logger->debug(sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $options['database_name']),
             DsLuceneBundle::PROVIDER_NAME, $contextData->getName());
 
+        $doc->addField(\Zend_Search_Lucene_Field::Keyword('uid', $indexDocument->getUUid(), 'UTF-8'));
+
         $index->addDocument($doc);
+
+        $index->commit();
 
     }
 
@@ -128,7 +134,9 @@ class LuceneIndexProvider implements IndexProviderInterface
     public function configureOptions(OptionsResolver $resolver)
     {
         $defaults = [
-            'database_name' => null,
+            'database_name'               => null,
+            'output_channel_autocomplete' => 'lucene',
+            'output_channel_search'       => 'lucene'
         ];
 
         $resolver->setDefaults($defaults);
