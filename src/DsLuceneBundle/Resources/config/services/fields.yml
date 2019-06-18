@@ -1,0 +1,26 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsLuceneBundle\Index\Field\BinaryField:
+        tags:
+            - { name: 'dynamic_search.index.field', identifier: 'binary', index_provider: 'lucene' }
+
+    DsLuceneBundle\Index\Field\KeywordField:
+        tags:
+            - { name: 'dynamic_search.index.field', identifier: 'keyword', index_provider: 'lucene' }
+
+    DsLuceneBundle\Index\Field\TextField:
+        tags:
+            - { name: 'dynamic_search.index.field', identifier: 'text', index_provider: 'lucene' }
+
+    DsLuceneBundle\Index\Field\UnIndexedField:
+        tags:
+            - { name: 'dynamic_search.index.field', identifier: 'unIndexed', index_provider: 'lucene' }
+
+    DsLuceneBundle\Index\Field\UnStoredField:
+        tags:
+            - { name: 'dynamic_search.index.field', identifier: 'unStored', index_provider: 'lucene' }

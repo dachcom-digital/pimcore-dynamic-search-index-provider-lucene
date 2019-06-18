@@ -30,10 +30,13 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
 
         $index = $this->storageBuilder->getLuceneIndex($context->getIndexProviderOptions()['database_name'], ConfigurationInterface::INDEX_BASE_STABLE);
 
-        $terms = $this->wildcardFindTerms($searchTerm, $index);
+        $terms = $this->getWildcardTerms($searchTerm, $index);
 
         $suggestions = [];
 
+        // we need to cycle each available term:
+        // - to check if its really available within sub-queries
+        // - to do so, one item should be enough to validate
         \Zend_Search_Lucene::setResultSetLimit(1);
 
         /** @var \Zend_Search_Lucene_Index_Term $term */
@@ -63,7 +66,13 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
 
     }
 
-    protected function wildcardFindTerms($queryStr, \Zend_Search_Lucene_Interface $index)
+    /**
+     * @param string                        $queryStr
+     * @param \Zend_Search_Lucene_Interface $index
+     *
+     * @return array
+     */
+    protected function getWildcardTerms($queryStr, \Zend_Search_Lucene_Interface $index)
     {
         $pattern = new \Zend_Search_Lucene_Index_Term($queryStr . '*');
         $userQuery = new \Zend_Search_Lucene_Search_Query_Wildcard($pattern);
@@ -75,7 +84,5 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
         }
 
         return $terms;
-
     }
-
 }

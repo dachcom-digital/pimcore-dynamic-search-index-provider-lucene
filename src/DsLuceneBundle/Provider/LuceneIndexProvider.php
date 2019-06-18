@@ -3,7 +3,6 @@
 namespace DsLuceneBundle\Provider;
 
 use DsLuceneBundle\DsLuceneBundle;
-use DsLuceneBundle\Integrator\FieldIntegrator;
 use DsLuceneBundle\Storage\StorageBuilder;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Document\IndexDocument;
@@ -24,18 +23,11 @@ class LuceneIndexProvider implements IndexProviderInterface
     protected $storageBuilder;
 
     /**
-     * @var FieldIntegrator
-     */
-    protected $fieldIntegrator;
-
-    /**
      * @param StorageBuilder  $storageBuilder
-     * @param FieldIntegrator $fieldIntegrator
      */
-    public function __construct(StorageBuilder $storageBuilder, FieldIntegrator $fieldIntegrator)
+    public function __construct(StorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
-        $this->fieldIntegrator = $fieldIntegrator;
     }
 
     /**
@@ -91,25 +83,29 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $doc = new \Zend_Search_Lucene_Document();
-        if ($indexDocument->getDocumentBoost() > 0) {
-            $doc->boost = $indexDocument->getDocumentBoost();
+        if ($indexDocument->hasDocumentOptions('boost')) {
+            $doc->boost = $indexDocument->getDocumentOptions('boost');
         }
 
-        $options = $contextData->getIndexProviderOptions();
-
-        $index = $this->storageBuilder->getLuceneIndex($options['database_name']);
+        $indexProviderOptions = $contextData->getIndexProviderOptions();
+        $index = $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name']);
 
         foreach ($indexDocument->getFields() as $field) {
-            $this->fieldIntegrator->integrate($field, $doc);
+
+            if (!$field['indexField'] instanceof \Zend_Search_Lucene_Field) {
+                continue;
+            }
+
+            $doc->addField($field['indexField']);
         }
 
-        $this->logger->debug(sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $options['database_name']),
-            DsLuceneBundle::PROVIDER_NAME, $contextData->getName());
-
-        $doc->addField(\Zend_Search_Lucene_Field::Keyword('uid', $indexDocument->getUUid(), 'UTF-8'));
+        $this->logger->debug(
+            sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $indexProviderOptions['database_name']),
+            DsLuceneBundle::PROVIDER_NAME,
+            $contextData->getName()
+        );
 
         $index->addDocument($doc);
-
         $index->commit();
 
     }

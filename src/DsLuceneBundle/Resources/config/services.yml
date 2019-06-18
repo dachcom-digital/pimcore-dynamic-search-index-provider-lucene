@@ -1,3 +1,6 @@
+imports:
+    - { resource: services/*.yml }
+
 services:
 
     _defaults:
@@ -6,20 +9,3 @@ services:
         public: false
 
     DsLuceneBundle\Storage\StorageBuilder: ~
-
-    DsLuceneBundle\Integrator\FieldIntegrator: ~
-
-    #
-    # Index Provider for Dynamic Search Bundle
-    #
-    DsLuceneBundle\Provider\LuceneIndexProvider:
-        tags:
-            - { name: 'dynamic_search.index_provider', alias: 'lucene' }
-
-    DsLuceneBundle\OutputChannel\AutoCompleteOutputChannel:
-        tags:
-            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'autocomplete' }
-
-    DsLuceneBundle\OutputChannel\SearchOutputChannel:
-        tags:
-            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'search' }
