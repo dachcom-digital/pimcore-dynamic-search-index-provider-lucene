@@ -2,8 +2,6 @@
 
 namespace DsLuceneBundle\Modifier;
 
-use DsLuceneBundle\Event\DocumentModificationEvent;
-use DsLuceneBundle\LuceneSearchEvents;
 use Pimcore\Model\Tool\TmpStore;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

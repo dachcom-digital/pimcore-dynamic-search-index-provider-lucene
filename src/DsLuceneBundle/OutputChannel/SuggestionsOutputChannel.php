@@ -3,14 +3,13 @@
 namespace DsLuceneBundle\OutputChannel;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
-use DsLuceneBundle\Paginator\Adapter\LuceneAdapter;
 use DsLuceneBundle\Storage\StorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
-use DynamicSearchBundle\OutputChannel\SearchOutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\SuggestionsOutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class SearchOutputChannel implements SearchOutputChannelInterface
+class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
 {
     /**
      * @var StorageBuilder
@@ -58,12 +57,16 @@ class SearchOutputChannel implements SearchOutputChannelInterface
     {
         $optionsResolver->setRequired([
             'min_prefix_length',
-            'max_per_page'
+            'result_limit',
+            'restrict_search_fields',
+            'restrict_search_fields_operator',
         ]);
 
         $optionsResolver->setDefaults([
-            'min_prefix_length' => 3,
-            'max_per_page' => 10
+            'min_prefix_length'               => 3,
+            'result_limit'                    => 3,
+            'restrict_search_fields'          => [],
+            'restrict_search_fields_operator' => 'OR',
         ]);
     }
 
@@ -72,7 +75,7 @@ class SearchOutputChannel implements SearchOutputChannelInterface
      */
     public function needsPaginator(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -80,7 +83,7 @@ class SearchOutputChannel implements SearchOutputChannelInterface
      */
     public function getPaginatorAdapterClass(): ?string
     {
-        return LuceneAdapter::class;
+        return null;
     }
 
     /**
@@ -110,11 +113,10 @@ class SearchOutputChannel implements SearchOutputChannelInterface
 
         \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($options['min_prefix_length']);
 
-        // we need to set result limit to 0
-        // lucence does not have any offset feature
-        // each hit returns a "lazy-loaded" document
-        // so we need to get rid o paging in a later process
-        \Zend_Search_Lucene::setResultSetLimit(0);
+        // we need to check each term:
+        // - to check if its really available within sub-queries
+        // - to do so, one item should be enough to validate
+        \Zend_Search_Lucene::setResultSetLimit($options['result_limit']);
 
         $query = new \Zend_Search_Lucene_Search_Query_Boolean();
         $userQuery = \Zend_Search_Lucene_Search_QueryParser::parse($parsedQueryTerm, 'utf-8');
@@ -128,8 +130,13 @@ class SearchOutputChannel implements SearchOutputChannelInterface
 
         $hits = $index->find($eventData->getParameter('query'));
 
+        $suggestions = [];
+        foreach ($hits as $hit) {
+            $suggestions[] = $hit;
+        }
+
         $eventData = $this->eventDispatcher->dispatchAction('post_execute', [
-            'result' => $hits,
+            'result' => $suggestions,
         ]);
 
         return $eventData->getParameter('result');
@@ -143,7 +150,31 @@ class SearchOutputChannel implements SearchOutputChannelInterface
      */
     protected function parseQuery(string $query, array $options)
     {
+        $minPrefixLength = $options['min_prefix_length'];
+        $queryTerms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
+            return strlen($t) >= $minPrefixLength;
+        }));
+
+        $terms = [];
+        foreach ($queryTerms as $i => $queryTerm) {
+            if ($i === count($queryTerms) - 1) {
+                $terms[] = sprintf('+"%s*"', $queryTerm);
+            } else {
+                $terms[] = sprintf('+"%s"', $queryTerm);
+            }
+        }
+
+        $operator = sprintf(' %s ', $options['restrict_search_fields_operator']);
+        if (count($options['restrict_search_fields']) > 0) {
+            $fieldTerms = [];
+            foreach ($options['restrict_search_fields'] as $field) {
+                $fieldTerms[] = sprintf('%s:%s', $field, join(' ', $terms));
+            }
+            $query = join($operator, $fieldTerms);
+        } else {
+            $query = join(' ', $terms);
+        }
+
         return $query;
     }
-
 }

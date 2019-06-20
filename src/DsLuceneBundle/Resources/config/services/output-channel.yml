@@ -7,8 +7,25 @@ services:
 
     DsLuceneBundle\OutputChannel\AutoCompleteOutputChannel:
         tags:
-            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'autocomplete' }
+            - { name: 'dynamic_search.output_channel', identifier: 'lucene', type: 'autocomplete' }
+
+    DsLuceneBundle\OutputChannel\SuggestionsOutputChannel:
+        tags:
+            - { name: 'dynamic_search.output_channel', identifier: 'lucene', type: 'suggestions' }
 
     DsLuceneBundle\OutputChannel\SearchOutputChannel:
         tags:
-            - { name: 'dynamic_search.index_provider.output_channel', alias: 'lucene', type: 'search' }
+            - { name: 'dynamic_search.output_channel', identifier: 'lucene', type: 'search' }
+
+    # Filter / Action
+
+    DsLuceneBundle\OutputChannel\Modifier\Filter\QueryCleanTermFilter:
+        tags:
+            - { name: 'dynamic_search.output_channel.modifier.filter', output_provider: 'lucene', filter: 'query.clean_term' }
+
+    # DsLuceneBundle\OutputChannel\Modifier\Action\LanguageAction:
+    #    tags:
+    #        - { name: 'dynamic_search.output_channel.modifier.action', output_provider: 'lucene', action: 'resolve_options' }
+    #        - { name: 'dynamic_search.output_channel.modifier.action', output_provider: 'lucene', action: 'pre_execute' }
+    #        - { name: 'dynamic_search.output_channel.modifier.action', output_provider: 'lucene', action: 'term_validation' }
+    #        - { name: 'dynamic_search.output_channel.modifier.action', output_provider: 'lucene', action: 'post_execute' }

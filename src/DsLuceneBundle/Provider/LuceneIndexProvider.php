@@ -23,7 +23,12 @@ class LuceneIndexProvider implements IndexProviderInterface
     protected $storageBuilder;
 
     /**
-     * @param StorageBuilder  $storageBuilder
+     * @var array
+     */
+    protected $configuration;
+
+    /**
+     * @param StorageBuilder $storageBuilder
      */
     public function __construct(StorageBuilder $storageBuilder)
     {
@@ -41,12 +46,17 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritDoc}
      */
+    public function setOptions(array $configuration)
+    {
+        $this->configuration = $configuration;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function warmUp(ContextDataInterface $contextData)
     {
-        $options = $contextData->getIndexProviderOptions();
-
-        $this->storageBuilder->createGenesisIndex($options['database_name'], true);
-
+        $this->storageBuilder->createGenesisIndex($this->configuration['database_name'], true);
     }
 
     /**
@@ -54,9 +64,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function coolDown(ContextDataInterface $contextData)
     {
-        $options = $contextData->getIndexProviderOptions();
-
-        $this->storageBuilder->riseGenesisIndexToStable($options['database_name']);
+        $this->storageBuilder->riseGenesisIndexToStable($this->configuration['database_name']);
     }
 
     /**
@@ -87,8 +95,7 @@ class LuceneIndexProvider implements IndexProviderInterface
             $doc->boost = $indexDocument->getDocumentOptions('boost');
         }
 
-        $indexProviderOptions = $contextData->getIndexProviderOptions();
-        $index = $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name']);
+        $index = $this->storageBuilder->getLuceneIndex($this->configuration['database_name']);
 
         foreach ($indexDocument->getFields() as $field) {
 
@@ -100,7 +107,7 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $this->logger->debug(
-            sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $indexProviderOptions['database_name']),
+            sprintf('Adding document with id %s to lucene index "%s"', $indexDocument->getUUid(), $this->configuration['database_name']),
             DsLuceneBundle::PROVIDER_NAME,
             $contextData->getName()
         );
@@ -130,9 +137,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     public function configureOptions(OptionsResolver $resolver)
     {
         $defaults = [
-            'database_name'               => null,
-            'output_channel_autocomplete' => 'lucene',
-            'output_channel_search'       => 'lucene'
+            'database_name' => null
         ];
 
         $resolver->setDefaults($defaults);
