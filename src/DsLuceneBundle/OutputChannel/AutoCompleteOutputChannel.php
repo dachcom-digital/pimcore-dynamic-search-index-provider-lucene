@@ -3,7 +3,7 @@
 namespace DsLuceneBundle\OutputChannel;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
-use DsLuceneBundle\Storage\StorageBuilder;
+use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\AutoCompleteOutputChannelInterface;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
 {
     /**
-     * @var StorageBuilder
+     * @var LuceneStorageBuilder
      */
     protected $storageBuilder;
 
@@ -27,9 +27,9 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
     protected $runtimeOptionsProvider;
 
     /**
-     * @param StorageBuilder $storageBuilder
+     * @param LuceneStorageBuilder $storageBuilder
      */
-    public function __construct(StorageBuilder $storageBuilder)
+    public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
     }
@@ -93,7 +93,12 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
     {
         $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
 
-        $index = $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE);
+        $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+        ]);
+
+        /** @var \Zend_Search_Lucene $index */
+        $index = $eventData->getParameter('index');
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
@@ -112,9 +117,8 @@ class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
         // - to do so, one item should be enough to validate
         \Zend_Search_Lucene::setResultSetLimit(1);
 
-        $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
-            'terms' => $terms,
-            'index' => $index
+        $eventData = $this->eventDispatcher->dispatchAction('post_wildcard_terms', [
+            'terms' => $terms
         ]);
 
         $terms = $eventData->getParameter('terms');

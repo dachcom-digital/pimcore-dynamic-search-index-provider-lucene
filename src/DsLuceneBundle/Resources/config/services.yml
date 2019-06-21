@@ -8,4 +8,4 @@ services:
         autoconfigure: true
         public: false
 
-    DsLuceneBundle\Storage\StorageBuilder: ~
+    DsLuceneBundle\Service\LuceneStorageBuilder: ~

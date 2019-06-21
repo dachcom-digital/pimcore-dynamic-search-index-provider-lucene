@@ -3,7 +3,7 @@
 namespace DsLuceneBundle\OutputChannel;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
-use DsLuceneBundle\Storage\StorageBuilder;
+use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
 use DynamicSearchBundle\OutputChannel\SuggestionsOutputChannelInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
 {
     /**
-     * @var StorageBuilder
+     * @var LuceneStorageBuilder
      */
     protected $storageBuilder;
 
@@ -27,9 +27,9 @@ class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
     protected $runtimeOptionsProvider;
 
     /**
-     * @param StorageBuilder $storageBuilder
+     * @param LuceneStorageBuilder $storageBuilder
      */
-    public function __construct(StorageBuilder $storageBuilder)
+    public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
     }
@@ -97,6 +97,7 @@ class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
             'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
+        /** @var \Zend_Search_Lucene $index */
         $index = $eventData->getParameter('index');
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
