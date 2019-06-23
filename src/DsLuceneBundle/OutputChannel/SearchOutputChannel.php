@@ -7,10 +7,10 @@ use DsLuceneBundle\Paginator\Adapter\LuceneAdapter;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
-use DynamicSearchBundle\OutputChannel\SearchOutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class SearchOutputChannel implements SearchOutputChannelInterface
+class SearchOutputChannel implements OutputChannelInterface
 {
     /**
      * @var LuceneStorageBuilder

@@ -5,11 +5,11 @@ namespace DsLuceneBundle\OutputChannel;
 use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
-use DynamicSearchBundle\OutputChannel\AutoCompleteOutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AutoCompleteOutputChannel implements AutoCompleteOutputChannelInterface
+class AutoCompleteOutputChannel implements OutputChannelInterface
 {
     /**
      * @var LuceneStorageBuilder

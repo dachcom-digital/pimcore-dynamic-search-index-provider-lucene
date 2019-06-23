@@ -6,10 +6,10 @@ use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
-use DynamicSearchBundle\OutputChannel\SuggestionsOutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
+class SuggestionsOutputChannel implements OutputChannelInterface
 {
     /**
      * @var LuceneStorageBuilder
