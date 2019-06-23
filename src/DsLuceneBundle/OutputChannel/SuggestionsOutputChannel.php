@@ -159,7 +159,7 @@ class SuggestionsOutputChannel implements SuggestionsOutputChannelInterface
         $terms = [];
         foreach ($queryTerms as $i => $queryTerm) {
             if ($i === count($queryTerms) - 1) {
-                $terms[] = sprintf('+"%s*"', $queryTerm);
+                $terms[] = sprintf('+%s*', $queryTerm);
             } else {
                 $terms[] = sprintf('+"%s"', $queryTerm);
             }
