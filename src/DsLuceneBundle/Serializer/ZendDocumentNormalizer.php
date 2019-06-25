@@ -44,6 +44,7 @@ class ZendDocumentNormalizer extends AbstractNormalizer
 
             unset($context['field_definitions']);
             $context['field_definition'] = $fieldDefinitions[$fieldName];
+            $context['field_name'] = $fieldName;
 
             $values[$fieldName] = $this->serializer->normalize($field, $format, $context);
         }

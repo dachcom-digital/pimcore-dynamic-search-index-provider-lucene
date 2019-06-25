@@ -2,9 +2,10 @@
 
 namespace DsLuceneBundle\Serializer;
 
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Exception\LogicException;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-class ZendFieldNormalizer implements NormalizerInterface
+class ZendFieldNormalizer extends AbstractNormalizer
 {
     /**
      * @param mixed $data
@@ -19,10 +20,7 @@ class ZendFieldNormalizer implements NormalizerInterface
             return $data;
         }
 
-        $fieldDefinition = $context['field_definition'];
-
-        // add output_transformer here!
-        $value = $data->getUtf8Value();
+        $value = $this->serializer->normalize($data->getUtf8Value(), $format, $context);
 
         return $value;
 
@@ -37,5 +35,21 @@ class ZendFieldNormalizer implements NormalizerInterface
     public function supportsNormalization($data, $format = null)
     {
         return $data instanceof \Zend_Search_Lucene_Field;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supportsDenormalization($data, $type, $format = null)
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function denormalize($data, $class, $format = null, array $context = [])
+    {
+        throw new LogicException(sprintf('Cannot denormalize with "%s".', \Zend_Search_Lucene_Document::class));
     }
 }

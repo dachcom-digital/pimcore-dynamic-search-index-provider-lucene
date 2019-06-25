@@ -58,15 +58,19 @@ class SuggestionsOutputChannel implements OutputChannelInterface
         $optionsResolver->setRequired([
             'min_prefix_length',
             'result_limit',
+            'only_last_word_wildcard',
+            'multiple_words_operator',
             'restrict_search_fields',
             'restrict_search_fields_operator',
         ]);
 
         $optionsResolver->setDefaults([
             'min_prefix_length'               => 3,
-            'result_limit'                    => 3,
+            'result_limit'                    => 10,
+            'only_last_word_wildcard'         => false,
+            'multiple_words_operator'         => 'OR',
             'restrict_search_fields'          => [],
-            'restrict_search_fields_operator' => 'OR',
+            'restrict_search_fields_operator' => 'OR'
         ]);
     }
 
@@ -152,30 +156,60 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     protected function parseQuery(string $query, array $options)
     {
         $minPrefixLength = $options['min_prefix_length'];
+        $onlyLastWordWildCard = $options['only_last_word_wildcard'];
+        $multipleWordsOperator = $options['multiple_words_operator'];
+        $multipleFieldsOperator = $options['restrict_search_fields_operator'];
+
         $queryTerms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
             return strlen($t) >= $minPrefixLength;
         }));
 
         $terms = [];
         foreach ($queryTerms as $i => $queryTerm) {
+
             if ($i === count($queryTerms) - 1) {
-                $terms[] = sprintf('+%s*', $queryTerm);
+                $parsedWildCardTerm = $this->checkWildcardTerm($queryTerm);
+                $terms[] = sprintf('+%s*', $parsedWildCardTerm);
             } else {
-                $terms[] = sprintf('+"%s"', $queryTerm);
+                $terms[] = sprintf('+%s%s', $queryTerm, ($onlyLastWordWildCard ? '' : '*'));
             }
         }
 
-        $operator = sprintf(' %s ', $options['restrict_search_fields_operator']);
         if (count($options['restrict_search_fields']) > 0) {
             $fieldTerms = [];
             foreach ($options['restrict_search_fields'] as $field) {
-                $fieldTerms[] = sprintf('%s:%s', $field, join(' ', $terms));
+                $fieldTerms[] = sprintf('(%s:%s)', $field, join(' ', $terms));
             }
-            $query = join($operator, $fieldTerms);
+            $query = join(sprintf(' %s ', $multipleFieldsOperator), $fieldTerms);
         } else {
-            $query = join(' ', $terms);
+            $query = join(sprintf(' %s ', $multipleWordsOperator), $terms);
         }
 
         return $query;
+    }
+
+    /**
+     * @param string $term
+     *
+     * @return string|null
+     */
+    protected function checkWildcardTerm(string $term)
+    {
+        $cleanTerm = null;
+        $specialTerms = [];
+
+        preg_match_all('/[\p{L}\p{N}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
+
+        if (!is_array($match[0])) {
+            return $term;
+        }
+
+        foreach ($match[0] as $matchTerm) {
+            $specialTerms[] = $matchTerm[0];
+        }
+
+        $cleanTerm = join('?', $specialTerms);
+
+        return $cleanTerm;
     }
 }
