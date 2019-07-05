@@ -30,7 +30,7 @@ class ZendDocumentNormalizer extends AbstractNormalizer
 
             // skip field if not required in current output channel
             if (isset($fieldDefinitions[$fieldName]) && $fieldDefinitions[$fieldName]['visibility'][$outputChannelName] === false) {
-                continue;
+                //continue;
             }
 
             try {

@@ -60,7 +60,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function warmUp(ContextDataInterface $contextData)
     {
-        if ($contextData->getDispatchType() !== ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
+        if ($contextData->getContextDispatchType() !== ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
             return;
         }
 
@@ -76,7 +76,14 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function coolDown(ContextDataInterface $contextData)
     {
-        if ($contextData->getDispatchType() !== ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
+        if ($contextData->getContextDispatchType() !== ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
+
+            try {
+                $this->storageBuilder->optimizeLuceneIndex($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE);
+            } catch (\Throwable $e) {
+                return;
+            }
+
             return;
         }
 
@@ -106,12 +113,12 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     public function execute(ContextDataInterface $contextData)
     {
-        $runtimeOptions = $this->validateRuntimeOptions($contextData->getRuntimeOptions());
+        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
 
-        $indexDocument = $runtimeOptions['index_document'];
+        $indexDocument = $runtimeValues['index_document'];
 
         try {
-            switch ($contextData->getDispatchType()) {
+            switch ($contextData->getContextDispatchType()) {
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX:
                     $this->executeIndex($contextData, $indexDocument);
                     break;
@@ -121,21 +128,12 @@ class LuceneIndexProvider implements IndexProviderInterface
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE:
                     $this->executeUpdate($contextData, $indexDocument);
                     break;
+                case ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE:
+                    $this->executeDelete($contextData, $indexDocument);
+                    break;
                 default:
-                    throw new \Exception(sprintf('invalid context dispatch type "%s". cannot perform index provider dispatch.', $contextData->getDispatchType()));
+                    throw new \Exception(sprintf('invalid context dispatch type "%s". cannot perform index provider dispatch.', $contextData->getContextDispatchType()));
             }
-        } catch (\Throwable $e) {
-            throw new ProviderException($e->getMessage(), DsLuceneBundle::PROVIDER_NAME, $e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function executeDeletion(ContextDataInterface $contextData)
-    {
-        try {
-            $this->executeDelete($contextData);
         } catch (\Throwable $e) {
             throw new ProviderException($e->getMessage(), DsLuceneBundle::PROVIDER_NAME, $e);
         }
@@ -202,19 +200,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     protected function executeUpdate(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        $runtimeOptions = $this->validateRuntimeOptions($contextData->getRuntimeOptions());
-
-        if ($indexDocument->getDocumentId() !== $runtimeOptions['id']) {
-            $this->logger->error(
-                sprintf('could not update index. index document id "%s" does not match with requested document id "%s"',
-                    $indexDocument->getDocumentId(),
-                    $runtimeOptions['id']
-                ),
-                DsLuceneBundle::PROVIDER_NAME,
-                $contextData->getName()
-            );
-            return;
-        }
+        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
 
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
@@ -226,15 +212,15 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $luceneHandler = new LuceneHandler($this->getStableIndex());
-        $termDocuments = $luceneHandler->findTermDocuments($runtimeOptions['id']);
+        $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
         if (!is_array($termDocuments) || count($termDocuments) === 0) {
 
-            $createNewDocumentMessage = $runtimeOptions['force_adding'] == true
+            $createNewDocumentMessage = $runtimeValues['force_adding'] == true
                 ? ' Going to add new document (runtime options "force_adding" is set to "true")'
                 : ' Going to skip adding new document (runtime options "force_adding" is set to "false")';
-            $this->logger->error(
-                sprintf('document with id "%s" not found. %s', $runtimeOptions['id'], $createNewDocumentMessage),
+            $this->logger->debug(
+                sprintf('document with id "%s" not found. %s', $indexDocument->getDocumentId(), $createNewDocumentMessage),
                 DsLuceneBundle::PROVIDER_NAME,
                 $contextData->getName()
             );
@@ -256,12 +242,13 @@ class LuceneIndexProvider implements IndexProviderInterface
 
     /**
      * @param ContextDataInterface $contextData
+     * @param IndexDocument        $indexDocument
      *
      * @throws LuceneException
      */
-    protected function executeDelete(ContextDataInterface $contextData)
+    protected function executeDelete(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        $runtimeOptions = $this->validateRuntimeOptions($contextData->getRuntimeOptions());
+        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
 
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
@@ -273,11 +260,11 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $luceneHandler = new LuceneHandler($this->getStableIndex());
-        $termDocuments = $luceneHandler->findTermDocuments($runtimeOptions['id']);
+        $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
         if (!is_array($termDocuments) || count($termDocuments) === 0) {
             $this->logger->error(
-                sprintf('document with id "%s" could not be found. Skipping deletion...', $runtimeOptions['id']),
+                sprintf('document with id "%s" could not be found. Skipping deletion...', $indexDocument->getDocumentId()),
                 DsLuceneBundle::PROVIDER_NAME,
                 $contextData->getName()
             );
@@ -305,21 +292,21 @@ class LuceneIndexProvider implements IndexProviderInterface
     }
 
     /**
-     * @param array $runtimeOptions
+     * @param array $runtimeValues
      *
      * @return array
      */
-    protected function validateRuntimeOptions(array $runtimeOptions = [])
+    protected function validateRuntimeValues(array $runtimeValues = [])
     {
-        if (!isset($runtimeOptions['force_adding'])) {
-            $runtimeOptions['force_adding'] = true;
+        if (!isset($runtimeValues['force_adding'])) {
+            $runtimeValues['force_adding'] = true;
         }
 
-        if (!isset($runtimeOptions['id'])) {
-            $runtimeOptions['id'] = null;
+        if (!isset($runtimeValues['index_document'])) {
+            $runtimeValues['index_document'] = null;
         }
 
-        return $runtimeOptions;
+        return $runtimeValues;
     }
 
     /**
