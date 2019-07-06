@@ -16,6 +16,10 @@ class ZendFieldNormalizer extends AbstractNormalizer
      */
     public function normalize($data, $format = null, array $context = [])
     {
+        if ($context['dynamic_search_context'] !== true) {
+            return $data;
+        }
+
         if (!$data instanceof \Zend_Search_Lucene_Field) {
             return $data;
         }

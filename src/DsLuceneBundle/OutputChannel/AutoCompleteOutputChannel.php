@@ -89,7 +89,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritDoc}
      */
-    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = [])
+    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
     {
         $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
 

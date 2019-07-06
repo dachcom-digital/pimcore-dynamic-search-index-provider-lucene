@@ -86,7 +86,7 @@ class SearchOutputChannel implements OutputChannelInterface
     /**
      * {@inheritDoc}
      */
-    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = [])
+    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
     {
         $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
 
@@ -114,7 +114,7 @@ class SearchOutputChannel implements OutputChannelInterface
         // we need to set result limit to 0
         // lucence does not have any offset feature
         // each hit returns a "lazy-loaded" document
-        // so we need to get rid o paging in a later process
+        // so we need to get rid of paging in a later process
         \Zend_Search_Lucene::setResultSetLimit(0);
 
         $query = new \Zend_Search_Lucene_Search_Query_Boolean();

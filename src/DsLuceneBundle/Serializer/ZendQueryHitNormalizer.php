@@ -16,14 +16,18 @@ class ZendQueryHitNormalizer extends AbstractNormalizer
      */
     public function normalize($data, $format = null, array $context = [])
     {
+        if ($context['dynamic_search_context'] !== true) {
+            return $data;
+        }
+
         if (!$data instanceof \Zend_Search_Lucene_Search_QueryHit) {
             return $data;
         }
 
         $document = $data->getDocument();
 
-        $context['document_index_score'] = $data->score;
-        $context['document_index_id'] = $data->id;
+        $context['dynamic_search_context_options']['document_index_score'] = $data->score;
+        $context['dynamic_search_context_options']['document_index_id'] = $data->id;
 
         $value = $this->serializer->normalize($document, $format, $context);
 
