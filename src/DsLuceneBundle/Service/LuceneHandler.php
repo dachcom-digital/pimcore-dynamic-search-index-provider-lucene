@@ -61,17 +61,22 @@ class LuceneHandler implements LuceneHandlerInterface
         $doc = new \Zend_Search_Lucene_Document();
         $doc->addField(\Zend_Search_Lucene_Field::keyword('id', $indexDocument->getDocumentId()));
 
-        if ($indexDocument->hasDocumentOption('boost')) {
-            $doc->boost = $indexDocument->getDocumentOption('boost');
+        if ($indexDocument->hasOptionFields()) {
+            foreach ($indexDocument->getOptionFields() as $optionField) {
+                if ($optionField->getName() === 'boost') {
+                    $doc->boost = $optionField->getData();
+                    break;
+                }
+            }
         }
 
-        foreach ($indexDocument->getFields() as $field) {
+        foreach ($indexDocument->getIndexFields() as $field) {
 
-            if (!$field['indexField'] instanceof \Zend_Search_Lucene_Field) {
+            if (!$field->getData() instanceof \Zend_Search_Lucene_Field) {
                 continue;
             }
 
-            $doc->addField($field['indexField']);
+            $doc->addField($field->getData());
         }
 
         if ($addToIndex === true) {

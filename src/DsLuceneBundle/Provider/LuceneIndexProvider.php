@@ -147,7 +147,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     protected function executeIndex(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        if (!$indexDocument->hasFields()) {
+        if (!$indexDocument->hasIndexFields()) {
             return;
         }
 
