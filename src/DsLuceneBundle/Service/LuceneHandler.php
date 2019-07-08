@@ -59,7 +59,10 @@ class LuceneHandler implements LuceneHandlerInterface
     public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true)
     {
         $doc = new \Zend_Search_Lucene_Document();
-        $doc->addField(\Zend_Search_Lucene_Field::keyword('id', $indexDocument->getDocumentId()));
+        $doc->addField(\Zend_Search_Lucene_Field::keyword('id', $indexDocument->getDocumentId(), 'UTF-8'));
+        $doc->addField(\Zend_Search_Lucene_Field::keyword('_resource_id', $indexDocument->getResourceMeta()->getResourceId(), 'UTF-8'));
+        $doc->addField(\Zend_Search_Lucene_Field::keyword('_resource_collection_type', $indexDocument->getResourceMeta()->getResourceCollectionType(), 'UTF-8'));
+        $doc->addField(\Zend_Search_Lucene_Field::keyword('_resource_type', $indexDocument->getResourceMeta()->getResourceType(), 'UTF-8'));
 
         if ($indexDocument->hasOptionFields()) {
             foreach ($indexDocument->getOptionFields() as $optionField) {

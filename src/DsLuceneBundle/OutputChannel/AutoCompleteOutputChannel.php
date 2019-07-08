@@ -71,22 +71,6 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * @return bool
-     */
-    public function needsPaginator(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPaginatorAdapterClass(): ?string
-    {
-        return null;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array

@@ -3,7 +3,6 @@
 namespace DsLuceneBundle\OutputChannel;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
-use DsLuceneBundle\Paginator\Adapter\LuceneAdapter;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
@@ -65,22 +64,6 @@ class SearchOutputChannel implements OutputChannelInterface
             'min_prefix_length' => 3,
             'max_per_page' => 10
         ]);
-    }
-
-    /**
-     * @return bool
-     */
-    public function needsPaginator(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPaginatorAdapterClass(): ?string
-    {
-        return LuceneAdapter::class;
     }
 
     /**

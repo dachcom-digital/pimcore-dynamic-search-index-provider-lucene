@@ -139,6 +139,11 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
     }
 
+    public function mapResult(array $result)
+    {
+
+    }
+
     /**
      * @param ContextDataInterface $contextData
      * @param IndexDocument        $indexDocument
