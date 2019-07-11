@@ -5,6 +5,6 @@ services:
         autoconfigure: true
         public: false
 
-    DsLuceneBundle\Normalizer\DocumentNormalizer:
+    DsLuceneBundle\Normalizer\DocumentKeyValueNormalizer:
         tags:
-            - { name: dynamic_search.document_normalizer, identifier: lucene_document_normalizer, index_provider: lucene }
+            - { name: dynamic_search.document_normalizer, identifier: lucene_document_key_value_normalizer, index_provider: lucene }
