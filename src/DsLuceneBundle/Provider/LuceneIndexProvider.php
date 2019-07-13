@@ -32,19 +32,15 @@ class LuceneIndexProvider implements IndexProviderInterface
     protected $configuration;
 
     /**
+     * @param LoggerInterface      $logger
      * @param LuceneStorageBuilder $storageBuilder
      */
-    public function __construct(LuceneStorageBuilder $storageBuilder)
-    {
-        $this->storageBuilder = $storageBuilder;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        LuceneStorageBuilder $storageBuilder
+    ) {
         $this->logger = $logger;
+        $this->storageBuilder = $storageBuilder;
     }
 
     /**
@@ -111,19 +107,13 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritDoc}
      */
-    public function execute(ContextDataInterface $contextData)
+    public function processDocument(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
-
-        $indexDocument = $runtimeValues['index_document'];
-
         try {
             switch ($contextData->getContextDispatchType()) {
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX:
-                    $this->executeIndex($contextData, $indexDocument);
-                    break;
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT:
-                    $this->executeInsert($contextData, $indexDocument);
+                    $this->executeIndex($contextData, $indexDocument);
                     break;
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE:
                     $this->executeUpdate($contextData, $indexDocument);
@@ -137,11 +127,6 @@ class LuceneIndexProvider implements IndexProviderInterface
         } catch (\Throwable $e) {
             throw new ProviderException($e->getMessage(), DsLuceneBundle::PROVIDER_NAME, $e);
         }
-    }
-
-    public function mapResult(array $result)
-    {
-
     }
 
     /**
@@ -205,8 +190,6 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     protected function executeUpdate(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
-
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
                 sprintf('could not update index. index with name "%s" is not available in a stable state', $this->configuration['database_name']),
@@ -221,9 +204,9 @@ class LuceneIndexProvider implements IndexProviderInterface
 
         if (!is_array($termDocuments) || count($termDocuments) === 0) {
 
-            $createNewDocumentMessage = $runtimeValues['force_adding'] == true
-                ? ' Going to add new document (runtime options "force_adding" is set to "true")'
-                : ' Going to skip adding new document (runtime options "force_adding" is set to "false")';
+            $createNewDocumentMessage = $this->configuration['force_adding_document'] === true
+                ? ' Going to add new document (options "force_adding_document" is set to "true")'
+                : ' Going to skip adding new document (options "force_adding_document" is set to "false")';
             $this->logger->debug(
                 sprintf('document with id "%s" not found. %s', $indexDocument->getDocumentId(), $createNewDocumentMessage),
                 DsLuceneBundle::PROVIDER_NAME,
@@ -253,8 +236,6 @@ class LuceneIndexProvider implements IndexProviderInterface
      */
     protected function executeDelete(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
-        $runtimeValues = $this->validateRuntimeValues($contextData->getRuntimeValues());
-
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
                 sprintf('could not update index. index with name "%s" is not available in a stable state', $this->configuration['database_name']),
@@ -287,31 +268,15 @@ class LuceneIndexProvider implements IndexProviderInterface
     public function configureOptions(OptionsResolver $resolver)
     {
         $defaults = [
-            'database_name' => null
+            'database_name'         => null,
+            'force_adding_document' => true
         ];
 
         $resolver->setDefaults($defaults);
         $resolver->setRequired(array_keys($defaults));
 
         $resolver->setAllowedTypes('database_name', ['string']);
-    }
-
-    /**
-     * @param array $runtimeValues
-     *
-     * @return array
-     */
-    protected function validateRuntimeValues(array $runtimeValues = [])
-    {
-        if (!isset($runtimeValues['force_adding'])) {
-            $runtimeValues['force_adding'] = true;
-        }
-
-        if (!isset($runtimeValues['index_document'])) {
-            $runtimeValues['index_document'] = null;
-        }
-
-        return $runtimeValues;
+        $resolver->setAllowedTypes('force_adding_document', ['bool']);
     }
 
     /**
