@@ -30,4 +30,3 @@ final class DsLuceneBundle extends AbstractPimcoreBundle
         return self::PACKAGE_NAME;
     }
 }
-

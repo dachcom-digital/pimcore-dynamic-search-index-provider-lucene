@@ -15,7 +15,6 @@ class LuceneDocumentDataExtractor
 
         $data = [];
         foreach ($document->getFieldNames() as $fieldName) {
-
             $field = null;
             $fieldDefinition = null;
 
@@ -33,7 +32,5 @@ class LuceneDocumentDataExtractor
         }
 
         return $data;
-
     }
-
 }

@@ -7,13 +7,17 @@ use DynamicSearchBundle\OutputChannel\Modifier\OutputChannelModifierFilterInterf
 class QueryCleanTermFilter implements OutputChannelModifierFilterInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function dispatchFilter(string $outputChannelName, array $options)
     {
         return trim(
-            preg_replace('|\s{2,}|', ' ',
-                preg_replace('|[^\p{L}\p{N} ]/u|', ' ',
+            preg_replace(
+                '|\s{2,}|',
+                ' ',
+                preg_replace(
+                    '|[^\p{L}\p{N} ]/u|',
+                    ' ',
                     strtolower(
                         strip_tags(
                             str_replace("\n", ' ', $options['raw_term'])

@@ -11,5 +11,4 @@ interface ConfigurationInterface
     const INDEX_BASE_GENESIS = self::INDEX_BASE . '/genesis';
 
     const INDEX_BASE_STABLE = self::INDEX_BASE . '/stable';
-
 }

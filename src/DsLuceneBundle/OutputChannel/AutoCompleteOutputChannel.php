@@ -35,7 +35,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
     {
@@ -43,7 +43,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
     {
@@ -51,7 +51,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
@@ -71,7 +71,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
     {
@@ -110,7 +110,6 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         $suggestions = [];
         /** @var \Zend_Search_Lucene_Index_Term $term */
         foreach ($terms as $term) {
-
             $fieldText = $term->text;
 
             if (in_array($fieldText, $suggestions)) {
@@ -141,7 +140,6 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         ]);
 
         return $eventData->getParameter('result');
-
     }
 
     /**
@@ -167,7 +165,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * @param string                        $queryStr
      * @param \Zend_Search_Lucene_Interface $index
-     * @param integer                       $prefixLength optionally specify prefix length, default 0
+     * @param int                           $prefixLength optionally specify prefix length, default 0
      * @param float                         $similarity   optionally specify similarity, default 0.5
      *
      * @return string[] $similarSearchTerms
@@ -190,6 +188,5 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         }
 
         return $terms;
-
     }
 }

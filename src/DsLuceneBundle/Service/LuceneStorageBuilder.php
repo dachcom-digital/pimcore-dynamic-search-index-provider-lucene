@@ -25,6 +25,7 @@ class LuceneStorageBuilder
      * @param bool   $killExistingInstance
      *
      * @return \Zend_Search_Lucene_Interface
+     *
      * @throws LuceneException
      */
     public function createGenesisIndex(string $databaseName, $killExistingInstance = false)
@@ -52,7 +53,6 @@ class LuceneStorageBuilder
         }
 
         return $this->getLuceneIndex($databaseName);
-
     }
 
     /**
@@ -112,6 +112,7 @@ class LuceneStorageBuilder
      * @param string $state
      *
      * @return \Zend_Search_Lucene_Interface
+     *
      * @throws LuceneException
      */
     public function getLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
@@ -157,6 +158,7 @@ class LuceneStorageBuilder
 
         try {
             \Zend_Search_Lucene::open($indexDir);
+
             return true;
         } catch (\Zend_Search_Lucene_Exception $e) {
             // fail silently
@@ -195,4 +197,3 @@ class LuceneStorageBuilder
         return sprintf('%s/%s', $state, $databaseName);
     }
 }
-

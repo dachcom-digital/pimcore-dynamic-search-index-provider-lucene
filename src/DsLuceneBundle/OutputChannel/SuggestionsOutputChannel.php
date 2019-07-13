@@ -35,7 +35,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
     {
@@ -43,7 +43,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
     {
@@ -51,7 +51,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
@@ -75,7 +75,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
     {
@@ -150,7 +150,6 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         $terms = [];
         foreach ($queryTerms as $i => $queryTerm) {
-
             if ($i === count($queryTerms) - 1) {
                 $parsedWildCardTerm = $this->checkWildcardTerm($queryTerm);
                 $terms[] = sprintf('+%s*', $parsedWildCardTerm);

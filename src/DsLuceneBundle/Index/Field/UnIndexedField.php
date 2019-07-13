@@ -5,7 +5,7 @@ namespace DsLuceneBundle\Index\Field;
 final class UnIndexedField extends AbstractType
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function build(string $name, $data, array $configuration = [])
     {

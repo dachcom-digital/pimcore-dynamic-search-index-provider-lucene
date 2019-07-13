@@ -7,7 +7,7 @@ use DynamicSearchBundle\Document\IndexDocument;
 interface LuceneHandlerInterface
 {
     /**
-     * @param $documentId
+     * @param string $documentId
      *
      * @return array
      */
@@ -32,6 +32,4 @@ interface LuceneHandlerInterface
      * @param bool                         $commit
      */
     public function addDocumentToIndex(\Zend_Search_Lucene_Document $document, bool $commit = true);
-
 }
-

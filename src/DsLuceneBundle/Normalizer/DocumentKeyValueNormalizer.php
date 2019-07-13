@@ -15,7 +15,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -27,7 +27,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -35,7 +35,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function normalize(ContextDataInterface $contextData, string $outputChannelName, $data)
     {

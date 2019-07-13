@@ -2,12 +2,10 @@
 
 namespace DsLuceneBundle\Index\Field;
 
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
-
 final class UnStoredField extends AbstractType
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function build(string $name, $data, array $configuration = [])
     {

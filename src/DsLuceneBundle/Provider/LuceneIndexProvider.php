@@ -44,7 +44,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $configuration)
     {
@@ -52,7 +52,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function warmUp(ContextDataInterface $contextData)
     {
@@ -68,12 +68,11 @@ class LuceneIndexProvider implements IndexProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function coolDown(ContextDataInterface $contextData)
     {
         if ($contextData->getContextDispatchType() !== ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
-
             try {
                 $this->storageBuilder->optimizeLuceneIndex($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE);
             } catch (\Throwable $e) {
@@ -91,21 +90,21 @@ class LuceneIndexProvider implements IndexProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function cancelledShutdown(ContextDataInterface $contextData)
     {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function emergencyShutdown(ContextDataInterface $contextData)
     {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function processDocument(ContextDataInterface $contextData, IndexDocument $indexDocument)
     {
@@ -114,12 +113,15 @@ class LuceneIndexProvider implements IndexProviderInterface
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX:
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT:
                     $this->executeIndex($contextData, $indexDocument);
+
                     break;
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE:
                     $this->executeUpdate($contextData, $indexDocument);
+
                     break;
                 case ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE:
                     $this->executeDelete($contextData, $indexDocument);
+
                     break;
                 default:
                     throw new \Exception(sprintf('invalid context dispatch type "%s". cannot perform index provider dispatch.', $contextData->getContextDispatchType()));
@@ -167,6 +169,7 @@ class LuceneIndexProvider implements IndexProviderInterface
                 DsLuceneBundle::PROVIDER_NAME,
                 $contextData->getName()
             );
+
             return;
         }
 
@@ -196,6 +199,7 @@ class LuceneIndexProvider implements IndexProviderInterface
                 DsLuceneBundle::PROVIDER_NAME,
                 $contextData->getName()
             );
+
             return;
         }
 
@@ -203,7 +207,6 @@ class LuceneIndexProvider implements IndexProviderInterface
         $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
         if (!is_array($termDocuments) || count($termDocuments) === 0) {
-
             $createNewDocumentMessage = $this->configuration['force_adding_document'] === true
                 ? ' Going to add new document (options "force_adding_document" is set to "true")'
                 : ' Going to skip adding new document (options "force_adding_document" is set to "false")';
@@ -242,6 +245,7 @@ class LuceneIndexProvider implements IndexProviderInterface
                 DsLuceneBundle::PROVIDER_NAME,
                 $contextData->getName()
             );
+
             return;
         }
 
@@ -259,11 +263,10 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         $luceneHandler->deleteDocuments($termDocuments);
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -281,6 +284,7 @@ class LuceneIndexProvider implements IndexProviderInterface
 
     /**
      * @return \Zend_Search_Lucene_Interface
+     *
      * @throws LuceneException
      */
     protected function getStableIndex()
@@ -290,6 +294,7 @@ class LuceneIndexProvider implements IndexProviderInterface
 
     /**
      * @return \Zend_Search_Lucene_Interface
+     *
      * @throws LuceneException
      */
     protected function getGenesisIndex()

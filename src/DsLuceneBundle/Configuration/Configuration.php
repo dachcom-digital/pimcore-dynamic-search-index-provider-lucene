@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * @param $slot
+     * @param string $slot
      *
      * @return mixed
      */

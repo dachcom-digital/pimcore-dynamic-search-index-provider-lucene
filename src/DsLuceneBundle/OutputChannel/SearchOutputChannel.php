@@ -35,7 +35,7 @@ class SearchOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
     {
@@ -43,7 +43,7 @@ class SearchOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
     {
@@ -51,7 +51,7 @@ class SearchOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
@@ -62,12 +62,12 @@ class SearchOutputChannel implements OutputChannelInterface
 
         $optionsResolver->setDefaults([
             'min_prefix_length' => 3,
-            'max_per_page' => 10
+            'max_per_page'      => 10
         ]);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
     {
@@ -129,5 +129,4 @@ class SearchOutputChannel implements OutputChannelInterface
     {
         return $query;
     }
-
 }

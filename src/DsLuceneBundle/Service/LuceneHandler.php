@@ -20,21 +20,21 @@ class LuceneHandler implements LuceneHandlerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function findTermDocuments($documentId)
     {
         $idTerm = new \Zend_Search_Lucene_Index_Term($documentId, 'id');
+
         return $this->index->termDocs($idTerm);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function deleteDocuments(array $documentIds)
     {
         foreach ($documentIds as $documentId) {
-
             try {
                 $skip = $this->index->isDeleted($documentId);
             } catch (\Zend_Search_Lucene_Exception $e) {
@@ -54,7 +54,7 @@ class LuceneHandler implements LuceneHandlerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true)
     {
@@ -65,13 +65,13 @@ class LuceneHandler implements LuceneHandlerInterface
             foreach ($indexDocument->getOptionFields() as $optionField) {
                 if ($optionField->getName() === 'boost') {
                     $doc->boost = $optionField->getData();
+
                     break;
                 }
             }
         }
 
         foreach ($indexDocument->getIndexFields() as $field) {
-
             if (!$field->getData() instanceof \Zend_Search_Lucene_Field) {
                 continue;
             }
@@ -87,7 +87,7 @@ class LuceneHandler implements LuceneHandlerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addDocumentToIndex(\Zend_Search_Lucene_Document $document, bool $commit = true)
     {
@@ -98,4 +98,3 @@ class LuceneHandler implements LuceneHandlerInterface
         }
     }
 }
-
