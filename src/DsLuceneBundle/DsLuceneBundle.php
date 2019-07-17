@@ -2,16 +2,12 @@
 
 namespace DsLuceneBundle;
 
-use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
-use Pimcore\Extension\Bundle\Traits\PackageVersionTrait;
+use DynamicSearchBundle\Provider\Extension\ProviderBundleInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-final class DsLuceneBundle extends AbstractPimcoreBundle
+final class DsLuceneBundle extends Bundle implements ProviderBundleInterface
 {
-    use PackageVersionTrait;
-
-    const PACKAGE_NAME = 'dachcom-digital/dynamic-search-index-provider-lucene';
-
     const PROVIDER_NAME = 'lucene';
 
     /**
@@ -25,8 +21,8 @@ final class DsLuceneBundle extends AbstractPimcoreBundle
     /**
      * {@inheritdoc}
      */
-    protected function getComposerPackageName(): string
+    public function getProviderName(): string
     {
-        return self::PACKAGE_NAME;
+        return self::PROVIDER_NAME;
     }
 }

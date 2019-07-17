@@ -1,6 +1,6 @@
 {
     "name": "dachcom-digital/dynamic-search-index-provider-lucene",
-    "type": "pimcore-bundle",
+    "type": "dynamic-search-provider-bundle",
     "license": "GPL-3.0+",
     "description": "",
     "keywords": ["pimcore", "search", "dynamic-search", "index-provider","lucene"],
@@ -16,14 +16,6 @@
     "autoload": {
         "psr-4": {
             "DsLuceneBundle\\": "src/DsLuceneBundle"
-        }
-    },
-
-    "extra": {
-        "pimcore": {
-            "bundles": [
-                "DsLuceneBundle\\DsLuceneBundle"
-            ]
         }
     },
     "require": {
