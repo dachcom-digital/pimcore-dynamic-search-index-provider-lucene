@@ -12,6 +12,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class AutoCompleteOutputChannel implements OutputChannelInterface
 {
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var array
+     */
+    protected $indexProviderOptions;
+
+    /**
      * @var LuceneStorageBuilder
      */
     protected $storageBuilder;
@@ -37,22 +47,6 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
-    {
-        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
         $optionsResolver->setRequired([
@@ -73,12 +67,44 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setIndexProviderOptions(array $indexProviderOptions)
+    {
+        $this->indexProviderOptions = $indexProviderOptions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
+    {
+        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuery()
     {
         $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
 
         $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($this->indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
         /** @var \Zend_Search_Lucene $index */
@@ -89,12 +115,35 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
             ['raw_term' => $queryTerm]
         );
 
+        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
+
         $terms = $this->getWildcardTerms($cleanTerm, $index);
-        if (count($terms) === 0 && $options['use_fuzzy_term_search_fallback'] === true) {
-            $terms = $this->getFuzzyTerms($cleanTerm, $index, $options['fuzzy_default_prefix_length'], $options['fuzzy_similarity']);
+        if (count($terms) === 0 && $this->options['use_fuzzy_term_search_fallback'] === true) {
+            $terms = $this->getFuzzyTerms($cleanTerm, $index, $this->options['fuzzy_default_prefix_length'], $this->options['fuzzy_similarity']);
         }
 
-        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($options['min_prefix_length']);
+        $eventData = $this->eventDispatcher->dispatchAction('post_wildcard_terms', [
+            'terms' => $terms
+        ]);
+
+        return $eventData->getParameter('terms');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResult($terms)
+    {
+        if (!is_array($terms)) {
+            return [];
+        }
+
+        $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
+            'index' => $this->storageBuilder->getLuceneIndex($this->indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+        ]);
+
+        /** @var \Zend_Search_Lucene $index */
+        $index = $eventData->getParameter('index');
 
         // we need to check each term:
         // - to check if its really available within sub-queries
@@ -135,11 +184,29 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
             $suggestions[] = $fieldText;
         }
 
-        $eventData = $this->eventDispatcher->dispatchAction('post_execute', [
+        $eventData = $this->eventDispatcher->dispatchAction('post_result_execute', [
             'result' => $suggestions,
         ]);
 
         return $eventData->getParameter('result');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHits($result)
+    {
+        if (!is_array($result)) {
+            return [];
+        }
+
+        $hits = $result;
+
+        $eventData = $this->eventDispatcher->dispatchAction('post_hits_execute', [
+            'hits' => $hits,
+        ]);
+
+        return $eventData->getParameter('hits');
     }
 
     /**

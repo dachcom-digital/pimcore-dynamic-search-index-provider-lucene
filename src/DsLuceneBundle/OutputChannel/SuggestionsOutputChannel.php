@@ -12,6 +12,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class SuggestionsOutputChannel implements OutputChannelInterface
 {
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var array
+     */
+    protected $indexProviderOptions;
+
+    /**
      * @var LuceneStorageBuilder
      */
     protected $storageBuilder;
@@ -32,22 +42,6 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
-    {
-        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
     }
 
     /**
@@ -77,16 +71,41 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function execute(array $indexProviderOptions, array $options = [], array $contextOptions = []): array
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setIndexProviderOptions(array $indexProviderOptions)
+    {
+        $this->indexProviderOptions = $indexProviderOptions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
+    {
+        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuery()
     {
         $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
-
-        $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
-        ]);
-
-        /** @var \Zend_Search_Lucene $index */
-        $index = $eventData->getParameter('index');
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
@@ -95,17 +114,17 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         $eventData = $this->eventDispatcher->dispatchAction('post_query_parse', [
             'clean_term'        => $cleanTerm,
-            'parsed_query_term' => $this->parseQuery($cleanTerm, $options)
+            'parsed_query_term' => $this->parseQuery($cleanTerm, $this->options)
         ]);
 
         $parsedQueryTerm = $eventData->getParameter('parsed_query_term');
 
-        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($options['min_prefix_length']);
+        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
         // we need to check each term:
         // - to check if its really available within sub-queries
         // - to do so, one item should be enough to validate
-        \Zend_Search_Lucene::setResultSetLimit($options['result_limit']);
+        \Zend_Search_Lucene::setResultSetLimit($this->options['result_limit']);
 
         $query = new \Zend_Search_Lucene_Search_Query_Boolean();
         $userQuery = \Zend_Search_Lucene_Search_QueryParser::parse($parsedQueryTerm, 'utf-8');
@@ -117,14 +136,33 @@ class SuggestionsOutputChannel implements OutputChannelInterface
             'term'  => $cleanTerm
         ]);
 
-        $hits = $index->find($eventData->getParameter('query'));
+        return $eventData->getParameter('query');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResult($query)
+    {
+        if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
+            return [];
+        }
+
+        $eventData = $this->eventDispatcher->dispatchAction('build_index', [
+            'index' => $this->storageBuilder->getLuceneIndex($this->indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+        ]);
+
+        /** @var \Zend_Search_Lucene $index */
+        $index = $eventData->getParameter('index');
+
+        $hits = $index->find($query);
 
         $suggestions = [];
         foreach ($hits as $hit) {
             $suggestions[] = $hit;
         }
 
-        $eventData = $this->eventDispatcher->dispatchAction('post_execute', [
+        $eventData = $this->eventDispatcher->dispatchAction('post_result_execute', [
             'result' => $suggestions,
         ]);
 
@@ -132,17 +170,34 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getHits($result)
+    {
+        if (!is_array($result)) {
+            return [];
+        }
+
+        $hits = $result;
+
+        $eventData = $this->eventDispatcher->dispatchAction('post_hits_execute', [
+            'hits' => $hits,
+        ]);
+
+        return $eventData->getParameter('hits');
+    }
+
+    /**
      * @param string $query
-     * @param array  $options
      *
      * @return string
      */
-    protected function parseQuery(string $query, array $options)
+    protected function parseQuery(string $query)
     {
-        $minPrefixLength = $options['min_prefix_length'];
-        $onlyLastWordWildCard = $options['only_last_word_wildcard'];
-        $multipleWordsOperator = $options['multiple_words_operator'];
-        $multipleFieldsOperator = $options['restrict_search_fields_operator'];
+        $minPrefixLength = $this->options['min_prefix_length'];
+        $onlyLastWordWildCard = $this->options['only_last_word_wildcard'];
+        $multipleWordsOperator = $this->options['multiple_words_operator'];
+        $multipleFieldsOperator = $this->options['restrict_search_fields_operator'];
 
         $queryTerms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
             return strlen($t) >= $minPrefixLength;
@@ -158,9 +213,9 @@ class SuggestionsOutputChannel implements OutputChannelInterface
             }
         }
 
-        if (count($options['restrict_search_fields']) > 0) {
+        if (count($this->options['restrict_search_fields']) > 0) {
             $fieldTerms = [];
-            foreach ($options['restrict_search_fields'] as $field) {
+            foreach ($this->options['restrict_search_fields'] as $field) {
                 $fieldTerms[] = sprintf('(%s:%s)', $field, join(' ', $terms));
             }
             $query = join(sprintf(' %s ', $multipleFieldsOperator), $fieldTerms);

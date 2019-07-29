@@ -1,0 +1,10 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsLuceneBundle\OutputChannel\Filter\RelationsFilter:
+        tags:
+            - { name: dynamic_search.index.filter, identifier: relations, index_provider: lucene }
