@@ -9,7 +9,7 @@ class QueryCleanTermFilter implements OutputChannelModifierFilterInterface
     /**
      * {@inheritdoc}
      */
-    public function dispatchFilter(string $outputChannelName, array $options)
+    public function dispatchFilter(string $outputChannelServiceName, string $outputChannelName, ?string $parentOutputChannelName, array $options)
     {
         return trim(
             preg_replace(

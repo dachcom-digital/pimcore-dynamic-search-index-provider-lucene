@@ -6,7 +6,7 @@ use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\Filter\FilterInterface;
-use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
+use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class RelationsFilter implements FilterInterface
@@ -19,24 +19,24 @@ class RelationsFilter implements FilterInterface
     protected $options;
 
     /**
+     * @var string
+     */
+    protected $name;
+
+    /**
      * @var LuceneStorageBuilder
      */
     protected $storageBuilder;
 
     /**
-     * @var array
+     * @var OutputChannelContextInterface
      */
-    protected $indexProviderOptions;
+    protected $outputChannelContext;
 
     /**
      * @var OutputChannelModifierEventDispatcher
      */
     protected $eventDispatcher;
-
-    /**
-     * @var RuntimeOptionsProviderInterface
-     */
-    protected $runtimeOptionsProvider;
 
     /**
      * @param LuceneStorageBuilder $storageBuilder
@@ -73,6 +73,14 @@ class RelationsFilter implements FilterInterface
     /**
      * {@inheritdoc}
      */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -81,17 +89,9 @@ class RelationsFilter implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
     {
-        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setIndexProviderOptions(array $indexProviderOptions)
-    {
-        $this->indexProviderOptions = $indexProviderOptions;
+        $this->outputChannelContext = $outputChannelContext;
     }
 
     /**
@@ -111,7 +111,8 @@ class RelationsFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($this->runtimeOptionsProvider->getRequestQueryAsArray() as $key => $value) {
+        $runtimeOptionsProvider = $this->outputChannelContext->getRuntimeOptionsProvider();
+        foreach ($runtimeOptionsProvider->getRequestQueryAsArray() as $key => $value) {
 
             if (substr($key, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
                 continue;
@@ -129,7 +130,16 @@ class RelationsFilter implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function buildViewVars($query, $result)
+    public function findFilterValueInResult($result)
+    {
+        // not supported for lucene
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildViewVars($filterValues, $result, $query)
     {
         if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
             return null;
@@ -141,8 +151,9 @@ class RelationsFilter implements FilterInterface
             'values'   => []
         ];
 
+        $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($this->indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
         /** @var \Zend_Search_Lucene $index */
@@ -158,7 +169,8 @@ class RelationsFilter implements FilterInterface
             $filterNames[] = $fieldName;
         }
 
-        $queryFields = $this->runtimeOptionsProvider->getRequestQueryAsArray();
+        $runtimeOptionsProvider = $this->outputChannelContext->getRuntimeOptionsProvider();
+        $queryFields = $runtimeOptionsProvider->getRequestQueryAsArray();
 
         $values = [];
         foreach ($filterNames as $filterName) {

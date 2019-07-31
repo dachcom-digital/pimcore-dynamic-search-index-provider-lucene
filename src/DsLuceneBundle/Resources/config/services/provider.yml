@@ -10,4 +10,4 @@ services:
     #
     DsLuceneBundle\Provider\LuceneIndexProvider:
         tags:
-            - { name: 'dynamic_search.index_provider', identifier: 'lucene' }
+            - { name: dynamic_search.index_provider, identifier: lucene }

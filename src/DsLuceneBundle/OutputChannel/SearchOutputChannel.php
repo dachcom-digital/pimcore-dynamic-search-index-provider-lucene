@@ -5,7 +5,7 @@ namespace DsLuceneBundle\OutputChannel;
 use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
-use DynamicSearchBundle\OutputChannel\RuntimeOptions\RuntimeOptionsProviderInterface;
+use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -17,9 +17,9 @@ class SearchOutputChannel implements OutputChannelInterface
     protected $options;
 
     /**
-     * @var array
+     * @var OutputChannelContextInterface
      */
-    protected $indexProviderOptions;
+    protected $outputChannelContext;
 
     /**
      * @var LuceneStorageBuilder
@@ -30,11 +30,6 @@ class SearchOutputChannel implements OutputChannelInterface
      * @var OutputChannelModifierEventDispatcher
      */
     protected $eventDispatcher;
-
-    /**
-     * @var RuntimeOptionsProviderInterface
-     */
-    protected $runtimeOptionsProvider;
 
     /**
      * @param LuceneStorageBuilder $storageBuilder
@@ -58,6 +53,9 @@ class SearchOutputChannel implements OutputChannelInterface
             'min_prefix_length' => 3,
             'max_per_page'      => 10
         ]);
+
+        $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
+        $optionsResolver->setAllowedTypes('max_per_page', ['int']);
     }
 
     /**
@@ -71,9 +69,17 @@ class SearchOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setIndexProviderOptions(array $indexProviderOptions)
+    public function getOptions()
     {
-        $this->indexProviderOptions = $indexProviderOptions;
+        return $this->options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    {
+        $this->outputChannelContext = $outputChannelContext;
     }
 
     /**
@@ -87,17 +93,9 @@ class SearchOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setRuntimeParameterProvider(RuntimeOptionsProviderInterface $runtimeOptionsProvider)
-    {
-        $this->runtimeOptionsProvider = $runtimeOptionsProvider;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getQuery()
     {
-        $queryTerm = $this->runtimeOptionsProvider->getUserQuery();
+        $queryTerm = $this->outputChannelContext->getRuntimeOptionsProvider()->getUserQuery();
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
@@ -141,8 +139,10 @@ class SearchOutputChannel implements OutputChannelInterface
             return [];
         }
 
+        $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
+
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($this->indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
         /** @var \Zend_Search_Lucene $index */
@@ -155,25 +155,6 @@ class SearchOutputChannel implements OutputChannelInterface
         ]);
 
         return $eventData->getParameter('result');
-
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getHits($result)
-    {
-        if (!is_array($result)) {
-            return [];
-        }
-
-        $hits = $result;
-
-        $eventData = $this->eventDispatcher->dispatchAction('post_hits_execute', [
-            'hits' => $hits,
-        ]);
-
-        return $eventData->getParameter('hits');
 
     }
 
