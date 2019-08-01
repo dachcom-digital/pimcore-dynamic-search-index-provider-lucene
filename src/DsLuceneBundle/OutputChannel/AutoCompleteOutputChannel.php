@@ -96,7 +96,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
      */
     public function getQuery()
     {
-        $queryTerm = $this->outputChannelContext->getRuntimeOptionsProvider()->getUserQuery();
+        $queryTerm = $this->outputChannelContext->getRuntimeQueryProvider()->getUserQuery();
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [

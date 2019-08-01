@@ -100,7 +100,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
      */
     public function getQuery()
     {
-        $queryTerm = $this->outputChannelContext->getRuntimeOptionsProvider()->getUserQuery();
+        $queryTerm = $this->outputChannelContext->getRuntimeQueryProvider()->getUserQuery();
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',

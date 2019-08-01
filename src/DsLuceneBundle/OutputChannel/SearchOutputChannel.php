@@ -45,17 +45,14 @@ class SearchOutputChannel implements OutputChannelInterface
     public function configureOptions(OptionsResolver $optionsResolver)
     {
         $optionsResolver->setRequired([
-            'min_prefix_length',
-            'max_per_page'
+            'min_prefix_length'
         ]);
 
         $optionsResolver->setDefaults([
-            'min_prefix_length' => 3,
-            'max_per_page'      => 10
+            'min_prefix_length' => 3
         ]);
 
         $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
-        $optionsResolver->setAllowedTypes('max_per_page', ['int']);
     }
 
     /**
@@ -95,7 +92,7 @@ class SearchOutputChannel implements OutputChannelInterface
      */
     public function getQuery()
     {
-        $queryTerm = $this->outputChannelContext->getRuntimeOptionsProvider()->getUserQuery();
+        $queryTerm = $this->outputChannelContext->getRuntimeQueryProvider()->getUserQuery();
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',

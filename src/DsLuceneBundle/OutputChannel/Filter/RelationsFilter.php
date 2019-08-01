@@ -111,8 +111,8 @@ class RelationsFilter implements FilterInterface
             return $query;
         }
 
-        $runtimeOptionsProvider = $this->outputChannelContext->getRuntimeOptionsProvider();
-        foreach ($runtimeOptionsProvider->getRequestQueryAsArray() as $key => $value) {
+        $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
+        foreach ($runtimeOptions['request_query_vars'] as $key => $value) {
 
             if (substr($key, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
                 continue;
@@ -169,8 +169,8 @@ class RelationsFilter implements FilterInterface
             $filterNames[] = $fieldName;
         }
 
-        $runtimeOptionsProvider = $this->outputChannelContext->getRuntimeOptionsProvider();
-        $queryFields = $runtimeOptionsProvider->getRequestQueryAsArray();
+        $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
+        $queryFields = $runtimeOptions['request_query_vars'];
 
         $values = [];
         foreach ($filterNames as $filterName) {
