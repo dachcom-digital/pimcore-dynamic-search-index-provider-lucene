@@ -51,14 +51,16 @@ class RelationsFilter implements FilterInterface
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setRequired(['identifier', 'value', 'label', 'relation_label']);
+        $resolver->setRequired(['identifier', 'value', 'label', 'show_in_frontend', 'relation_label']);
+        $resolver->setAllowedTypes('show_in_frontend', ['bool']);
         $resolver->setAllowedTypes('identifier', ['string']);
         $resolver->setAllowedTypes('label', ['string', 'null']);
         $resolver->setAllowedTypes('relation_label', ['closure', 'null']);
 
         $resolver->setDefaults([
-            'relation_label' => null,
-            'label'          => null
+            'show_in_frontend' => true,
+            'relation_label'   => null,
+            'label'            => null
         ]);
     }
 
@@ -99,7 +101,7 @@ class RelationsFilter implements FilterInterface
      */
     public function supportsFrontendView(): bool
     {
-        return true;
+        return $this->options['show_in_frontend'];
     }
 
     /**
@@ -171,6 +173,7 @@ class RelationsFilter implements FilterInterface
 
         $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
         $queryFields = $runtimeOptions['request_query_vars'];
+        $prefix = $runtimeOptions['prefix'];
 
         $values = [];
         foreach ($filterNames as $filterName) {
@@ -201,6 +204,7 @@ class RelationsFilter implements FilterInterface
 
             $values[] = [
                 'name'           => $filterName,
+                'form_name'      => $prefix !== null ? sprintf('%s[%s]', $prefix, $filterName) : $filterName,
                 'value'          => $this->options['value'],
                 'count'          => count($filterHits),
                 'active'         => $active,
