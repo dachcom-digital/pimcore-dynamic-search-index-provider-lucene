@@ -109,7 +109,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         $eventData = $this->eventDispatcher->dispatchAction('post_query_parse', [
             'clean_term'        => $cleanTerm,
-            'parsed_query_term' => $this->parseQuery($cleanTerm, $this->options)
+            'parsed_query_term' => $this->parseQuery($cleanTerm)
         ]);
 
         $parsedQueryTerm = $eventData->getParameter('parsed_query_term');

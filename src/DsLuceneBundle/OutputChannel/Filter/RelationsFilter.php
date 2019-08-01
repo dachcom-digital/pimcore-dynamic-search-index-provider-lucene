@@ -115,7 +115,6 @@ class RelationsFilter implements FilterInterface
 
         $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
         foreach ($runtimeOptions['request_query_vars'] as $key => $value) {
-
             if (substr($key, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
                 continue;
             }
@@ -123,7 +122,6 @@ class RelationsFilter implements FilterInterface
             $filterTerm = new \Zend_Search_Lucene_Search_Query_MultiTerm();
             $filterTerm->addTerm(new \Zend_Search_Lucene_Index_Term($this->options['value'], $key));
             $query->addSubquery($filterTerm, true);
-
         }
 
         return $query;
@@ -163,7 +161,6 @@ class RelationsFilter implements FilterInterface
 
         $filterNames = [];
         foreach ($index->getFieldNames() as $fieldName) {
-
             if (substr($fieldName, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
                 continue;
             }
@@ -177,7 +174,6 @@ class RelationsFilter implements FilterInterface
 
         $values = [];
         foreach ($filterNames as $filterName) {
-
             $filterQuery = new \Zend_Search_Lucene_Search_Query_Boolean();
             $filterQuery->addSubquery($query, true);
 

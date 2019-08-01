@@ -50,7 +50,6 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
      */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
-
     }
 
     /**
@@ -121,7 +120,6 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
         $resultList = [];
 
         foreach ($this->subQueries as $subOutputChannelIdentifier => $query) {
-
             $eventData = $this->eventDispatcher->dispatchAction('build_index', [
                 'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
             ]);

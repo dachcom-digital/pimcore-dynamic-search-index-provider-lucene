@@ -152,7 +152,6 @@ class SearchOutputChannel implements OutputChannelInterface
         ]);
 
         return $eventData->getParameter('result');
-
     }
 
     /**
