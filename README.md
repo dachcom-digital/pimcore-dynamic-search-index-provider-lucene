@@ -51,9 +51,10 @@ Available Index Fields:
 
 ***
 
-## OutputChannel
+## Output Channel Services
 
 ### Autocomplete
+Identifier: `lucene_autocomplete`
 
 Available Options:
 
@@ -65,6 +66,7 @@ Available Options:
 |`fuzzy_similarity`                | 0.5           |             |
 
 ### Suggestions
+Identifier: `lucene_suggestions`
 
 Available Options:
 
@@ -78,6 +80,7 @@ Available Options:
 |`restrict_search_fields_operator` | 'OR'          |             |
 
 ### Search
+Identifier: `lucene_search`
 
 Available Options:
 
@@ -86,7 +89,28 @@ Available Options:
 |`min_prefix_length`               | 3             |             |
 |`max_per_page`                    | 10            |             |
 
+### Multi Search
+Identifier: `lucene_multi_search`
+
+Available Options: none
+
 ***
+
+## Filter
+
+### RelationsFilter
+Identifier: `relations`
+
+Available Options:
+
+| Name                      | Default Value | | Allowed Type    | Description |
+|:--------------------------|:--------------|:------------------|:------------|
+|`identifier`               | null          | string            |             |
+|`value`                    | null          | string            |             |
+|`label`                    | null          | string, null      |             |
+|`show_in_frontend`         | true          | bool              |             |
+|`relation_label`           | null          | closure, null     |             |
+
 
 ## Output Normalizer
 
