@@ -2,6 +2,7 @@
 
 namespace DsLuceneBundle\OutputChannel\Modifier\Filter;
 
+use DynamicSearchBundle\OutputChannel\Allocator\OutputChannelAllocatorInterface;
 use DynamicSearchBundle\OutputChannel\Modifier\OutputChannelModifierFilterInterface;
 
 class QueryCleanTermFilter implements OutputChannelModifierFilterInterface
@@ -9,7 +10,7 @@ class QueryCleanTermFilter implements OutputChannelModifierFilterInterface
     /**
      * {@inheritdoc}
      */
-    public function dispatchFilter(string $outputChannelServiceName, string $outputChannelName, ?string $parentOutputChannelName, array $options)
+    public function dispatchFilter(OutputChannelAllocatorInterface $outputChannelAllocator, array $options)
     {
         return trim(
             preg_replace(

@@ -188,7 +188,7 @@ class RelationsFilter implements FilterInterface
             }
 
             $active = false;
-            if (isset($queryFields[$filterName]) && $queryFields[$filterName] == $this->options['value']) {
+            if (isset($queryFields[$filterName]) && $queryFields[$filterName] === $this->options['value']) {
                 $active = true;
             }
 
