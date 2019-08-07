@@ -190,6 +190,14 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getHitCount($result)
+    {
+        return count($result);
+    }
+
+    /**
      * @param string                        $queryStr
      * @param \Zend_Search_Lucene_Interface $index
      *

@@ -167,6 +167,14 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getHitCount($result)
+    {
+        return count($result);
+    }
+
+    /**
      * @param string $query
      *
      * @return string

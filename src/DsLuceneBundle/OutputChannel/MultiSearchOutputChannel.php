@@ -138,4 +138,13 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
 
         return $resultList;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHitCount($query)
+    {
+        return count($query);
+    }
+
 }
