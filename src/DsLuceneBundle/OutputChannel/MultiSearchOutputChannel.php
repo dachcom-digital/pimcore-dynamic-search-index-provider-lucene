@@ -146,5 +146,4 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     {
         return count($query);
     }
-
 }
