@@ -13,6 +13,7 @@ use DynamicSearchBundle\Exception\ProviderException;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Provider\IndexProviderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene\SearchIndexInterface;
 
 class LuceneIndexProvider implements IndexProviderInterface
 {
@@ -61,7 +62,7 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         try {
-            $this->storageBuilder->createGenesisIndex($this->configuration['database_name'], true);
+            $this->storageBuilder->createGenesisIndex($this->configuration, true);
         } catch (\Throwable $e) {
             throw new ProviderException($e->getMessage(), DsLuceneBundle::PROVIDER_NAME, $e);
         }
@@ -83,7 +84,7 @@ class LuceneIndexProvider implements IndexProviderInterface
         }
 
         try {
-            $this->storageBuilder->riseGenesisIndexToStable($this->configuration['database_name']);
+            $this->storageBuilder->riseGenesisIndexToStable($this->configuration);
         } catch (\Throwable $e) {
             throw new ProviderException($e->getMessage(), DsLuceneBundle::PROVIDER_NAME, $e);
         }
@@ -143,7 +144,7 @@ class LuceneIndexProvider implements IndexProviderInterface
             return;
         }
 
-        $index = $this->getGenesisIndex();
+        $index = $this->getGenesisIndex($this->getLocaleFromIndexDocumentResource($indexDocument));
 
         $luceneHandler = new LuceneHandler($index);
         $luceneHandler->createLuceneDocument($indexDocument, true, false);
@@ -173,7 +174,7 @@ class LuceneIndexProvider implements IndexProviderInterface
             return;
         }
 
-        $index = $this->getStableIndex();
+        $index = $this->getStableIndex($this->getLocaleFromIndexDocumentResource($indexDocument));
 
         $luceneHandler = new LuceneHandler($index);
         $luceneHandler->createLuceneDocument($indexDocument, true, true);
@@ -203,7 +204,7 @@ class LuceneIndexProvider implements IndexProviderInterface
             return;
         }
 
-        $luceneHandler = new LuceneHandler($this->getStableIndex());
+        $luceneHandler = new LuceneHandler($this->getStableIndex($this->getLocaleFromIndexDocumentResource($indexDocument)));
         $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
         if (!is_array($termDocuments) || count($termDocuments) === 0) {
@@ -272,33 +273,53 @@ class LuceneIndexProvider implements IndexProviderInterface
     {
         $defaults = [
             'database_name'         => null,
-            'force_adding_document' => true
+            'force_adding_document' => true,
+            'analyzer'              => [],
         ];
 
         $resolver->setDefaults($defaults);
         $resolver->setRequired(array_keys($defaults));
 
         $resolver->setAllowedTypes('database_name', ['string']);
+        $resolver->setAllowedTypes('analyzer', ['array']);
         $resolver->setAllowedTypes('force_adding_document', ['bool']);
     }
 
     /**
-     * @return \Zend_Search_Lucene_Interface
+     * @param string|null $locale
      *
+     * @return SearchIndexInterface
      * @throws LuceneException
      */
-    protected function getStableIndex()
+    protected function getStableIndex(?string $locale = null)
     {
-        return $this->storageBuilder->getLuceneIndex($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE);
+        return $this->storageBuilder->getLuceneIndex($this->configuration, ConfigurationInterface::INDEX_BASE_STABLE, $locale, true);
     }
 
     /**
-     * @return \Zend_Search_Lucene_Interface
+     * @param string|null $locale
      *
+     * @return SearchIndexInterface
      * @throws LuceneException
      */
-    protected function getGenesisIndex()
+    protected function getGenesisIndex(?string $locale = null)
     {
-        return $this->storageBuilder->getLuceneIndex($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_GENESIS);
+        return $this->storageBuilder->getLuceneIndex($this->configuration, ConfigurationInterface::INDEX_BASE_GENESIS, $locale, true);
+    }
+
+    /**
+     * @param IndexDocument $indexDocument
+     *
+     * @return string|null
+     */
+    protected function getLocaleFromIndexDocumentResource(IndexDocument $indexDocument)
+    {
+        $locale = null;
+        $normalizerOptions = $indexDocument->getResourceMeta()->getNormalizerOptions();
+        if (isset($normalizerOptions['locale']) && !empty($normalizerOptions['locale'])) {
+            $locale = $normalizerOptions['locale'];
+        }
+
+        return $locale;
     }
 }

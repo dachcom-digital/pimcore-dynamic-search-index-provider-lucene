@@ -5,6 +5,8 @@ services:
         autoconfigure: true
         public: false
 
+    # Output Channel Services
+
     DsLuceneBundle\OutputChannel\AutoCompleteOutputChannel:
         tags:
             - { name: dynamic_search.output_channel, identifier: lucene_autocomplete }
@@ -21,6 +23,7 @@ services:
         tags:
             - { name: dynamic_search.output_channel, identifier: lucene_multi_search }
 
+
     # Filter / Action
 
     DsLuceneBundle\OutputChannel\Modifier\Filter\QueryCleanTermFilter:
@@ -28,11 +31,8 @@ services:
             - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_autocomplete, filter: query.clean_term }
             - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_suggestions, filter: query.clean_term }
             - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_search, filter: query.clean_term }
-            - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_multi_search, filter: query.clean_term }
 
-    # DsLuceneBundle\OutputChannel\Modifier\Action\LanguageAction:
-    #    tags:
-    #        - { name: dynamic_search.output_channel.modifier.action, output_channel_service_identifier: lucene, action: resolve_options }
-    #        - { name: dynamic_search.output_channel.modifier.action, output_channel_service_identifier: lucene, action: pre_execute }
-    #        - { name: dynamic_search.output_channel.modifier.action, output_channel_service_identifier: lucene, action: term_validation }
-    #        - { name: dynamic_search.output_channel.modifier.action, output_channel_service_identifier: lucene, action: post_execute }
+    DsLuceneBundle\OutputChannel\Modifier\Filter\QueryTermBuildFilter:
+        tags:
+            - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_suggestions, filter: query.build_term }
+            - { name: dynamic_search.output_channel.modifier.filter, output_channel_service_identifier: lucene_search, filter: query.build_term }

@@ -8,6 +8,8 @@ use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\Filter\FilterInterface;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene;
+use ZendSearch\Lucene\Search\Query;
 
 class RelationsFilter implements FilterInterface
 {
@@ -109,7 +111,7 @@ class RelationsFilter implements FilterInterface
      */
     public function enrichQuery($query)
     {
-        if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
+        if (!$query instanceof Query\Boolean) {
             return $query;
         }
 
@@ -119,8 +121,8 @@ class RelationsFilter implements FilterInterface
                 continue;
             }
 
-            $filterTerm = new \Zend_Search_Lucene_Search_Query_MultiTerm();
-            $filterTerm->addTerm(new \Zend_Search_Lucene_Index_Term($this->options['value'], $key));
+            $filterTerm = new Query\MultiTerm();
+            $filterTerm->addTerm(new Lucene\Index\Term($this->options['value'], $key));
             $query->addSubquery($filterTerm, true);
         }
 
@@ -141,7 +143,7 @@ class RelationsFilter implements FilterInterface
      */
     public function buildViewVars($filterValues, $result, $query)
     {
-        if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
+        if (!$query instanceof Query\Boolean) {
             return null;
         }
 
@@ -153,10 +155,10 @@ class RelationsFilter implements FilterInterface
 
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
-        /** @var \Zend_Search_Lucene $index */
+        /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
         $filterNames = [];
@@ -174,10 +176,10 @@ class RelationsFilter implements FilterInterface
 
         $values = [];
         foreach ($filterNames as $filterName) {
-            $filterQuery = new \Zend_Search_Lucene_Search_Query_Boolean();
+            $filterQuery = new Query\Boolean();
             $filterQuery->addSubquery($query, true);
 
-            $q = new \Zend_Search_Lucene_Search_Query_Term(new\Zend_Search_Lucene_Index_Term($this->options['value'], $filterName));
+            $q = new Query\Term(new Lucene\Index\Term($this->options['value'], $filterName));
 
             $filterQuery->addSubquery($q, true);
             $filterHits = $index->find($filterQuery);

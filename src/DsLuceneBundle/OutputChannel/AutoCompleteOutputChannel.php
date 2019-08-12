@@ -8,6 +8,10 @@ use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene;
+use ZendSearch\Lucene\Search\Query;
+use ZendSearch\Lucene\Search\QueryParser;
+use ZendSearch\Exception\ExceptionInterface;
 
 class AutoCompleteOutputChannel implements OutputChannelInterface
 {
@@ -100,18 +104,21 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
-        /** @var \Zend_Search_Lucene $index */
+        /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
-            ['raw_term' => $queryTerm]
+            [
+                'raw_term'               => $queryTerm,
+                'output_channel_options' => $this->options
+            ]
         );
 
-        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
+        Query\Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
         $terms = $this->getWildcardTerms($cleanTerm, $index);
         if (count($terms) === 0 && $this->options['use_fuzzy_term_search_fallback'] === true) {
@@ -137,16 +144,16 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('pre_execute', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
-        /** @var \Zend_Search_Lucene $index */
+        /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
         // we need to check each term:
         // - to check if its really available within sub-queries
         // - to do so, one item should be enough to validate
-        \Zend_Search_Lucene::setResultSetLimit(1);
+        Lucene\Lucene::setResultSetLimit(1);
 
         $eventData = $this->eventDispatcher->dispatchAction('post_wildcard_terms', [
             'terms' => $terms
@@ -155,7 +162,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         $terms = $eventData->getParameter('terms');
 
         $suggestions = [];
-        /** @var \Zend_Search_Lucene_Index_Term $term */
+        /** @var Lucene\Index\Term $term */
         foreach ($terms as $term) {
             $fieldText = $term->text;
 
@@ -163,8 +170,8 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
                 continue;
             }
 
-            $query = new \Zend_Search_Lucene_Search_Query_Boolean();
-            $userQuery = \Zend_Search_Lucene_Search_QueryParser::parse($fieldText, 'utf-8');
+            $query = new Query\Boolean();
+            $userQuery = QueryParser::parse($fieldText, 'utf-8');
 
             $query->addSubquery($userQuery, true);
 
@@ -198,19 +205,19 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * @param string                        $queryStr
-     * @param \Zend_Search_Lucene_Interface $index
+     * @param string                      $queryStr
+     * @param Lucene\SearchIndexInterface $index
      *
      * @return array
      */
-    protected function getWildcardTerms($queryStr, \Zend_Search_Lucene_Interface $index)
+    protected function getWildcardTerms($queryStr, Lucene\SearchIndexInterface $index)
     {
-        $pattern = new \Zend_Search_Lucene_Index_Term($queryStr . '*');
-        $userQuery = new \Zend_Search_Lucene_Search_Query_Wildcard($pattern);
+        $pattern = new Lucene\Index\Term($queryStr . '*');
+        $userQuery = new Query\Wildcard($pattern);
 
         try {
             $terms = $userQuery->rewrite($index)->getQueryTerms();
-        } catch (\Zend_Search_Lucene_Exception $e) {
+        } catch (ExceptionInterface $e) {
             return [];
         }
 
@@ -218,27 +225,27 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     }
 
     /**
-     * @param string                        $queryStr
-     * @param \Zend_Search_Lucene_Interface $index
-     * @param int                           $prefixLength optionally specify prefix length, default 0
-     * @param float                         $similarity   optionally specify similarity, default 0.5
+     * @param string                      $queryStr
+     * @param Lucene\SearchIndexInterface $index
+     * @param int                         $prefixLength optionally specify prefix length, default 0
+     * @param float                       $similarity   optionally specify similarity, default 0.5
      *
      * @return string[] $similarSearchTerms
      */
-    public function getFuzzyTerms($queryStr, \Zend_Search_Lucene_Interface $index, $prefixLength = 0, $similarity = 0.5)
+    public function getFuzzyTerms($queryStr, Lucene\SearchIndexInterface $index, $prefixLength = 0, $similarity = 0.5)
     {
-        \Zend_Search_Lucene_Search_Query_Fuzzy::setDefaultPrefixLength($prefixLength);
-        $term = new \Zend_Search_Lucene_Index_Term($queryStr);
+        Query\Fuzzy::setDefaultPrefixLength($prefixLength);
+        $term = new Lucene\Index\Term($queryStr);
 
         try {
-            $fuzzyQuery = new \Zend_Search_Lucene_Search_Query_Fuzzy($term, $similarity);
-        } catch (\Zend_Search_Lucene_Exception $e) {
+            $fuzzyQuery = new Query\Fuzzy($term, $similarity);
+        } catch (ExceptionInterface $e) {
             return [];
         }
 
         try {
             $terms = $fuzzyQuery->rewrite($index)->getQueryTerms();
-        } catch (\Zend_Search_Lucene_Exception $e) {
+        } catch (ExceptionInterface $e) {
             return [];
         }
 

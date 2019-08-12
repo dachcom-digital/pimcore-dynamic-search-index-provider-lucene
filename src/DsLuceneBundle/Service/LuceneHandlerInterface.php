@@ -3,6 +3,7 @@
 namespace DsLuceneBundle\Service;
 
 use DynamicSearchBundle\Document\IndexDocument;
+use ZendSearch\Lucene\Document;
 
 interface LuceneHandlerInterface
 {
@@ -23,13 +24,13 @@ interface LuceneHandlerInterface
      * @param bool          $addToIndex
      * @param bool          $commit
      *
-     * @return \Zend_Search_Lucene_Document
+     * @return Document
      */
     public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true);
 
     /**
-     * @param \Zend_Search_Lucene_Document $document
-     * @param bool                         $commit
+     * @param Document $document
+     * @param bool     $commit
      */
-    public function addDocumentToIndex(\Zend_Search_Lucene_Document $document, bool $commit = true);
+    public function addDocumentToIndex(Document $document, bool $commit = true);
 }

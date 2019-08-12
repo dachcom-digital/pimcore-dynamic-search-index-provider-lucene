@@ -8,6 +8,9 @@ use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene;
+use ZendSearch\Lucene\Search\Query;
+use ZendSearch\Lucene\Search\QueryParser;
 
 class SuggestionsOutputChannel implements OutputChannelInterface
 {
@@ -47,19 +50,15 @@ class SuggestionsOutputChannel implements OutputChannelInterface
         $optionsResolver->setRequired([
             'min_prefix_length',
             'result_limit',
-            'only_last_word_wildcard',
-            'multiple_words_operator',
-            'restrict_search_fields',
-            'restrict_search_fields_operator',
+            'fuzzy_search',
+            'restrict_search_fields'
         ]);
 
         $optionsResolver->setDefaults([
-            'min_prefix_length'               => 3,
-            'result_limit'                    => 10,
-            'only_last_word_wildcard'         => false,
-            'multiple_words_operator'         => 'OR',
-            'restrict_search_fields'          => [],
-            'restrict_search_fields_operator' => 'OR'
+            'min_prefix_length'      => 3,
+            'result_limit'           => 10,
+            'fuzzy_search'           => true,
+            'restrict_search_fields' => []
         ]);
     }
 
@@ -104,25 +103,33 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
-            ['raw_term' => $queryTerm]
+            [
+                'raw_term'               => $queryTerm,
+                'output_channel_options' => $this->options
+            ]
+        );
+
+        $builtTerm = $this->eventDispatcher->dispatchFilter(
+            'query.build_term',
+            [
+                'clean_term'             => $cleanTerm,
+                'output_channel_options' => $this->options
+            ]
         );
 
         $eventData = $this->eventDispatcher->dispatchAction('post_query_parse', [
-            'clean_term'        => $cleanTerm,
-            'parsed_query_term' => $this->parseQuery($cleanTerm)
+            'clean_term' => $cleanTerm,
+            'built_term' => $builtTerm
         ]);
 
-        $parsedQueryTerm = $eventData->getParameter('parsed_query_term');
+        $parsedQueryTerm = $eventData->getParameter('built_term');
 
-        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
+        Query\Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
-        // we need to check each term:
-        // - to check if its really available within sub-queries
-        // - to do so, one item should be enough to validate
-        \Zend_Search_Lucene::setResultSetLimit($this->options['result_limit']);
+        Lucene\Lucene::setResultSetLimit($this->options['result_limit']);
 
-        $query = new \Zend_Search_Lucene_Search_Query_Boolean();
-        $userQuery = \Zend_Search_Lucene_Search_QueryParser::parse($parsedQueryTerm, 'utf-8');
+        $query = new Query\Boolean();
+        $userQuery = QueryParser::parse($parsedQueryTerm, 'utf-8');
 
         $query->addSubquery($userQuery, true);
 
@@ -139,17 +146,17 @@ class SuggestionsOutputChannel implements OutputChannelInterface
      */
     public function getResult($query)
     {
-        if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
+        if (!$query instanceof Query\Boolean) {
             return [];
         }
 
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
         ]);
 
-        /** @var \Zend_Search_Lucene $index */
+        /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
         $hits = $index->find($query);
@@ -172,69 +179,5 @@ class SuggestionsOutputChannel implements OutputChannelInterface
     public function getHitCount($result)
     {
         return count($result);
-    }
-
-    /**
-     * @param string $query
-     *
-     * @return string
-     */
-    protected function parseQuery(string $query)
-    {
-        $minPrefixLength = $this->options['min_prefix_length'];
-        $onlyLastWordWildCard = $this->options['only_last_word_wildcard'];
-        $multipleWordsOperator = $this->options['multiple_words_operator'];
-        $multipleFieldsOperator = $this->options['restrict_search_fields_operator'];
-
-        $queryTerms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
-            return strlen($t) >= $minPrefixLength;
-        }));
-
-        $terms = [];
-        foreach ($queryTerms as $i => $queryTerm) {
-            if ($i === count($queryTerms) - 1) {
-                $parsedWildCardTerm = $this->checkWildcardTerm($queryTerm);
-                $terms[] = sprintf('+%s*', $parsedWildCardTerm);
-            } else {
-                $terms[] = sprintf('+%s%s', $queryTerm, ($onlyLastWordWildCard ? '' : '*'));
-            }
-        }
-
-        if (count($this->options['restrict_search_fields']) > 0) {
-            $fieldTerms = [];
-            foreach ($this->options['restrict_search_fields'] as $field) {
-                $fieldTerms[] = sprintf('(%s:%s)', $field, join(' ', $terms));
-            }
-            $query = join(sprintf(' %s ', $multipleFieldsOperator), $fieldTerms);
-        } else {
-            $query = join(sprintf(' %s ', $multipleWordsOperator), $terms);
-        }
-
-        return $query;
-    }
-
-    /**
-     * @param string $term
-     *
-     * @return string|null
-     */
-    protected function checkWildcardTerm(string $term)
-    {
-        $cleanTerm = null;
-        $specialTerms = [];
-
-        preg_match_all('/[\p{L}\p{N}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
-
-        if (!is_array($match[0])) {
-            return $term;
-        }
-
-        foreach ($match[0] as $matchTerm) {
-            $specialTerms[] = $matchTerm[0];
-        }
-
-        $cleanTerm = join('?', $specialTerms);
-
-        return $cleanTerm;
     }
 }

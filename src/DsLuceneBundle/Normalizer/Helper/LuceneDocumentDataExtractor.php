@@ -2,14 +2,18 @@
 
 namespace DsLuceneBundle\Normalizer\Helper;
 
+use ZendSearch\Lucene\Document\Field;
+use ZendSearch\Lucene\Search\QueryHit;
+use ZendSearch\Exception\ExceptionInterface;
+
 class LuceneDocumentDataExtractor
 {
     /**
-     * @param \Zend_Search_Lucene_Search_QueryHit $hit
+     * @param QueryHit $hit
      *
      * @return array
      */
-    public function extract(\Zend_Search_Lucene_Search_QueryHit $hit)
+    public function extract(QueryHit $hit)
     {
         $document = $hit->getDocument();
 
@@ -20,11 +24,11 @@ class LuceneDocumentDataExtractor
 
             try {
                 $field = $document->getField($fieldName);
-            } catch (\Zend_Search_Lucene_Exception $e) {
+            } catch (ExceptionInterface $e) {
                 // fail silently
             }
 
-            if (!$field instanceof \Zend_Search_Lucene_Field) {
+            if (!$field instanceof Field) {
                 continue;
             }
 

@@ -8,6 +8,9 @@ use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene;
+use ZendSearch\Lucene\Search\Query;
+use ZendSearch\Lucene\Search\QueryParser;
 
 class SearchOutputChannel implements OutputChannelInterface
 {
@@ -45,11 +48,17 @@ class SearchOutputChannel implements OutputChannelInterface
     public function configureOptions(OptionsResolver $optionsResolver)
     {
         $optionsResolver->setRequired([
-            'min_prefix_length'
+            'min_prefix_length',
+            'result_limit',
+            'fuzzy_search',
+            'restrict_search_fields'
         ]);
 
         $optionsResolver->setDefaults([
-            'min_prefix_length' => 3
+            'min_prefix_length'      => 3,
+            'result_limit'           => 1000,
+            'fuzzy_search'           => true,
+            'restrict_search_fields' => []
         ]);
 
         $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
@@ -96,26 +105,41 @@ class SearchOutputChannel implements OutputChannelInterface
 
         $cleanTerm = $this->eventDispatcher->dispatchFilter(
             'query.clean_term',
-            ['raw_term' => $queryTerm]
+            [
+                'raw_term'               => $queryTerm,
+                'output_channel_options' => $this->options
+            ]
         );
 
+        $builtTerm = $this->eventDispatcher->dispatchFilter(
+            'query.build_term',
+            [
+                'clean_term'             => $cleanTerm,
+                'output_channel_options' => $this->options
+            ]
+        );
+
+        if (empty($builtTerm)) {
+            return null;
+        }
+
         $eventData = $this->eventDispatcher->dispatchAction('post_query_parse', [
-            'clean_term'        => $cleanTerm,
-            'parsed_query_term' => $this->parseQuery($cleanTerm)
+            'clean_term' => $cleanTerm,
+            'built_term' => $builtTerm
         ]);
 
-        $parsedQueryTerm = $eventData->getParameter('parsed_query_term');
+        $parsedQueryTerm = $eventData->getParameter('built_term');
 
-        \Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
+        Query\Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
-        // we need to set result limit to 1000
+        // we need to set result limit to 1000 by default
         // lucene does not have any offset feature
         // each hit returns a "lazy-loaded" document
         // so we need to get rid of paging in a later process
-        \Zend_Search_Lucene::setResultSetLimit(1000);
+        Lucene\Lucene::setResultSetLimit($this->options['result_limit']);
 
-        $query = new \Zend_Search_Lucene_Search_Query_Boolean();
-        $userQuery = \Zend_Search_Lucene_Search_QueryParser::parse($parsedQueryTerm, 'utf-8');
+        $query = new Query\Boolean();
+        $userQuery = QueryParser::parse($parsedQueryTerm, 'utf-8');
 
         $query->addSubquery($userQuery, true);
 
@@ -132,17 +156,18 @@ class SearchOutputChannel implements OutputChannelInterface
      */
     public function getResult($query)
     {
-        if (!$query instanceof \Zend_Search_Lucene_Search_Query_Boolean) {
+        if (!$query instanceof Query\Boolean) {
             return [];
         }
 
+        $userLocale = $this->outputChannelContext->getRuntimeQueryProvider()->getUserLocale();
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE, $userLocale)
         ]);
 
-        /** @var \Zend_Search_Lucene $index */
+        /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
         $result = $index->find($query);
@@ -160,15 +185,5 @@ class SearchOutputChannel implements OutputChannelInterface
     public function getHitCount($result)
     {
         return count($result);
-    }
-
-    /**
-     * @param string $query
-     *
-     * @return string
-     */
-    protected function parseQuery(string $query)
-    {
-        return $query;
     }
 }

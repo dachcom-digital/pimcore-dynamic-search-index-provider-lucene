@@ -21,6 +21,8 @@
     "require": {
         "dachcom-digital/dynamic-search": "^0.5",
         "pimcore/pimcore": "^5.8.0",
-        "zf1/zend-search-lucene": "~1.12"
+        "zendframework/zend-stdlib": "~2.3",
+        "zendframework/zendsearch": "@dev",
+        "wamania/php-stemmer": "~1.2"
     }
 }

@@ -5,8 +5,14 @@ namespace DsLuceneBundle\Service;
 use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\DsLuceneBundle;
 use DsLuceneBundle\Exception\LuceneException;
+use DsLuceneBundle\Lucene\Analyzer\DefaultAnalyzerBuilder;
 use DynamicSearchBundle\Exception\ProviderException;
 use Symfony\Component\Filesystem\Filesystem;
+use ZendSearch\Lucene\Analysis\Analyzer\Analyzer;
+use ZendSearch\Lucene\Lucene;
+use ZendSearch\Exception\ExceptionInterface;
+use ZendSearch\Lucene\Search\QueryParser;
+use ZendSearch\Lucene\SearchIndexInterface;
 
 class LuceneStorageBuilder
 {
@@ -15,24 +21,28 @@ class LuceneStorageBuilder
      */
     protected $filesystem;
 
+    /**
+     */
     public function __construct()
     {
         $this->filesystem = new Filesystem();
     }
 
     /**
-     * @param string $databaseName
-     * @param bool   $killExistingInstance
+     * @param array $providerOptions
+     * @param bool  $killExistingInstance
      *
-     * @return \Zend_Search_Lucene_Interface
+     * @return SearchIndexInterface
      *
      * @throws LuceneException
      */
-    public function createGenesisIndex(string $databaseName, $killExistingInstance = false)
+    public function createGenesisIndex(array $providerOptions, $killExistingInstance = false)
     {
+        $databaseName = $providerOptions['database_name'];
+
         if ($this->indexExists($databaseName)) {
             if ($killExistingInstance === false) {
-                return $this->getLuceneIndex($databaseName);
+                return $this->getLuceneIndex($providerOptions);
             }
 
             $this->dropLuceneIndex($databaseName, ConfigurationInterface::INDEX_BASE_GENESIS);
@@ -43,26 +53,28 @@ class LuceneStorageBuilder
         $index = null;
 
         try {
-            $index = \Zend_Search_Lucene::create($indexDir);
-        } catch (\Zend_Search_Lucene_Exception $e) {
+            $index = Lucene::create($indexDir);
+        } catch (ExceptionInterface $e) {
             throw new LuceneException(sprintf('Unable to create lucene database "%s". Error was: %s', $databaseName, $e), $e);
         }
 
-        if (!$index instanceof \Zend_Search_Lucene_Proxy) {
+        if (!$index instanceof SearchIndexInterface) {
             throw new LuceneException(sprintf('Unable to create lucene database "%s"', $databaseName));
         }
 
-        return $this->getLuceneIndex($databaseName);
+        return $this->getLuceneIndex($providerOptions);
     }
 
     /**
-     * @param string $databaseName
+     * @param array $providerOptions
      *
      * @throws ProviderException
      * @throws LuceneException
      */
-    public function riseGenesisIndexToStable(string $databaseName)
+    public function riseGenesisIndexToStable(array $providerOptions)
     {
+        $databaseName = $providerOptions['database_name'];
+
         if (!$this->indexExists($databaseName, ConfigurationInterface::INDEX_BASE_GENESIS)) {
             throw new ProviderException(sprintf('lucene database "%s" does not exists in genesis', $databaseName), DsLuceneBundle::PROVIDER_NAME);
         }
@@ -84,51 +96,32 @@ class LuceneStorageBuilder
     }
 
     /**
-     * @param string $databaseName
-     * @param string $state
+     * @param array       $providerOptions
+     * @param string      $state
+     * @param string|null $locale
+     * @param bool        $isIndexMode
+     *
+     * @return SearchIndexInterface
      *
      * @throws LuceneException
      */
-    public function optimizeLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    public function getLuceneIndex(array $providerOptions, string $state = ConfigurationInterface::INDEX_BASE_GENESIS, ?string $locale = null, $isIndexMode = false)
     {
-        if (!$this->indexExists($databaseName, $state)) {
-            return;
-        }
+        QueryParser::setDefaultEncoding('utf-8');
 
-        $index = $this->getLuceneIndex($databaseName, $state);
+        $builder = new DefaultAnalyzerBuilder();
 
-        // commit changes
-        $index->commit();
-
-        // optimize lucene index for better performance
-        $index->optimize();
-
-        //clean up
-        $index->removeReference();
-    }
-
-    /**
-     * @param string $databaseName
-     * @param string $state
-     *
-     * @return \Zend_Search_Lucene_Interface
-     *
-     * @throws LuceneException
-     */
-    public function getLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
-    {
         try {
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('UTF-8');
-        } catch (\Zend_Search_Exception $e) {
+            $analyzer = $builder->build($providerOptions['analyzer'], $locale, $isIndexMode);
+        } catch (ExceptionInterface $e) {
             throw new LuceneException($e->getMessage(), $e);
         }
 
-        $indexDir = $this->createIndexDir($databaseName, $state);
+        Analyzer::setDefault($analyzer);
 
-        $index = \Zend_Search_Lucene::open($indexDir);
+        $indexDir = $this->createIndexDir($providerOptions['database_name'], $state);
 
-        return $index;
+        return Lucene::open($indexDir);
     }
 
     /**
@@ -149,6 +142,26 @@ class LuceneStorageBuilder
     /**
      * @param string $databaseName
      * @param string $state
+     */
+    public function optimizeLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    {
+        if (!$this->indexExists($databaseName, $state)) {
+            return;
+        }
+
+        $indexDir = $this->createIndexDir($databaseName, $state);
+        $index = Lucene::open($indexDir);
+
+        // commit changes
+        $index->commit();
+
+        // optimize lucene index for better performance
+        $index->optimize();
+    }
+
+    /**
+     * @param string $databaseName
+     * @param string $state
      *
      * @return bool
      */
@@ -157,10 +170,10 @@ class LuceneStorageBuilder
         $indexDir = $this->createIndexDir($databaseName, $state);
 
         try {
-            \Zend_Search_Lucene::open($indexDir);
+            Lucene::open($indexDir);
 
             return true;
-        } catch (\Zend_Search_Lucene_Exception $e) {
+        } catch (ExceptionInterface $e) {
             // fail silently
         }
 
@@ -173,7 +186,7 @@ class LuceneStorageBuilder
      *
      * @return string
      */
-    protected function createIndexDir($databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    protected function createIndexDir(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
     {
         $path = $this->buildIndexPath($databaseName, $state);
 
@@ -192,7 +205,7 @@ class LuceneStorageBuilder
      *
      * @return string
      */
-    protected function buildIndexPath($databaseName, $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    protected function buildIndexPath(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
     {
         return sprintf('%s/%s', $state, $databaseName);
     }

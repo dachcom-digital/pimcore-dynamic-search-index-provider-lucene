@@ -3,18 +3,22 @@
 namespace DsLuceneBundle\Service;
 
 use DynamicSearchBundle\Document\IndexDocument;
+use ZendSearch\Lucene\Document;
+use ZendSearch\Lucene\Index\Term;
+use ZendSearch\Lucene\SearchIndexInterface;
+use ZendSearch\Exception\ExceptionInterface;
 
 class LuceneHandler implements LuceneHandlerInterface
 {
     /**
-     * @var \Zend_Search_Lucene_Interface
+     * @var SearchIndexInterface
      */
     protected $index;
 
     /**
-     * @param \Zend_Search_Lucene_Interface $index
+     * @param SearchIndexInterface $index
      */
-    public function __construct(\Zend_Search_Lucene_Interface $index)
+    public function __construct(SearchIndexInterface $index)
     {
         $this->index = $index;
     }
@@ -24,7 +28,7 @@ class LuceneHandler implements LuceneHandlerInterface
      */
     public function findTermDocuments($documentId)
     {
-        $idTerm = new \Zend_Search_Lucene_Index_Term($documentId, 'id');
+        $idTerm = new Term($documentId, 'id');
 
         return $this->index->termDocs($idTerm);
     }
@@ -37,7 +41,7 @@ class LuceneHandler implements LuceneHandlerInterface
         foreach ($documentIds as $documentId) {
             try {
                 $skip = $this->index->isDeleted($documentId);
-            } catch (\Zend_Search_Lucene_Exception $e) {
+            } catch (ExceptionInterface $e) {
                 $skip = true;
             }
 
@@ -47,7 +51,7 @@ class LuceneHandler implements LuceneHandlerInterface
 
             try {
                 $this->index->delete($documentId);
-            } catch (\Zend_Search_Lucene_Exception $e) {
+            } catch (ExceptionInterface $e) {
                 continue;
             }
         }
@@ -58,8 +62,8 @@ class LuceneHandler implements LuceneHandlerInterface
      */
     public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true)
     {
-        $doc = new \Zend_Search_Lucene_Document();
-        $doc->addField(\Zend_Search_Lucene_Field::keyword('id', $indexDocument->getDocumentId(), 'UTF-8'));
+        $doc = new Document();
+        $doc->addField(Document\Field::keyword('id', $indexDocument->getDocumentId(), 'UTF-8'));
 
         if ($indexDocument->hasOptionFields()) {
             foreach ($indexDocument->getOptionFields() as $optionField) {
@@ -72,7 +76,7 @@ class LuceneHandler implements LuceneHandlerInterface
         }
 
         foreach ($indexDocument->getIndexFields() as $field) {
-            if (!$field->getData() instanceof \Zend_Search_Lucene_Field) {
+            if (!$field->getData() instanceof Document\Field) {
                 continue;
             }
 
@@ -89,7 +93,7 @@ class LuceneHandler implements LuceneHandlerInterface
     /**
      * {@inheritdoc}
      */
-    public function addDocumentToIndex(\Zend_Search_Lucene_Document $document, bool $commit = true)
+    public function addDocumentToIndex(Document $document, bool $commit = true)
     {
         $this->index->addDocument($document);
 

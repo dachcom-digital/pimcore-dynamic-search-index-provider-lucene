@@ -6,6 +6,7 @@ use DsLuceneBundle\Normalizer\Helper\LuceneDocumentDataExtractor;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Normalizer\DocumentNormalizerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene\Search\QueryHit;
 
 class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
 {
@@ -44,7 +45,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
         $dataExtractor = new LuceneDocumentDataExtractor();
 
         foreach ($data as $documentHit) {
-            if ($documentHit instanceof \Zend_Search_Lucene_Search_QueryHit) {
+            if ($documentHit instanceof QueryHit) {
                 $documentData = $dataExtractor->extract($documentHit);
                 // remove blacklist keys (from skip_fields option)
                 $normalizedDocuments[] = array_diff_key($documentData, array_flip($this->options['skip_fields']));

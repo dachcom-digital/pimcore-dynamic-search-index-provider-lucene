@@ -9,6 +9,7 @@ use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\MultiOutputChannelInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ZendSearch\Lucene;
 
 class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputChannelInterface
 {
@@ -121,10 +122,10 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
 
         foreach ($this->subQueries as $subOutputChannelIdentifier => $query) {
             $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-                'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)
+                'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
             ]);
 
-            /** @var \Zend_Search_Lucene $index */
+            /** @var Lucene\SearchIndexInterface $index */
             $index = $eventData->getParameter('index');
 
             $result = $index->find($query);
