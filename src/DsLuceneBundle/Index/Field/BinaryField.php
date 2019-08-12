@@ -12,7 +12,10 @@ final class BinaryField extends AbstractType
     public function build(string $name, $data, array $configuration = [])
     {
         $field = Lucene\Document\Field::binary($name, $data);
-        // $field->boost = $type->getBoost() > 1 ? $type->getBoost() : 1.0;
+
+        if (isset($configuration['boost']) && is_numeric($configuration['boost'])) {
+            $field->boost = $configuration['boost'];
+        }
 
         return $field;
     }
