@@ -39,6 +39,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
         $minPrefixLength = $outputChannelOptions['min_prefix_length'];
         $restrictSearchFields = $outputChannelOptions['restrict_search_fields'];
         $enableFuzzySearch = $outputChannelOptions['fuzzy_search'];
+        $enableWildcardSearch = $outputChannelOptions['wildcard_search'];
 
         // Without restricted search fields:    ("awesome query") OR (awesome~ OR query~);
         // With restricted search fields:       (f1:"awesome query" OR f2:"awesome query") OR (f1:awesome~ OR f2:awesome~ OR f1:query~ OR f2:query~);
@@ -66,7 +67,27 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
 
             $query[] = sprintf('(%s)', join(' OR ', $terms));
 
-        } else {
+        }
+
+        // 2. OR search for each wildcard term
+        if ($enableWildcardSearch === true) {
+
+            $terms = [];
+            $splitTerms = $this->termModifier->splitTerm($cleanTerm, $minPrefixLength, 10);
+            foreach ($splitTerms as $i => $queryTerm) {
+                $fieldTerms = $this->getFieldTerm($restrictSearchFields, $queryTerm);
+                $subTerms = [];
+                foreach ($fieldTerms as $fieldTerm) {
+                    $subTerms[] = sprintf('%s*', $fieldTerm);
+                }
+                $terms[] = join(' OR ', $subTerms);
+            }
+
+            $query[] = sprintf('(%s)', join(' OR ', $terms));
+
+        }
+
+        if ($enableFuzzySearch === false && $enableFuzzySearch === false) {
             $query[] = sprintf('(%s)', $this->termModifier->removeSpecialOperators($cleanTerm));
         }
 

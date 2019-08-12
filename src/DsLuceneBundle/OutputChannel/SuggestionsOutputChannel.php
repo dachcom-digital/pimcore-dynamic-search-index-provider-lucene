@@ -51,6 +51,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
             'min_prefix_length',
             'result_limit',
             'fuzzy_search',
+            'wildcard_search',
             'restrict_search_fields'
         ]);
 
@@ -58,6 +59,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
             'min_prefix_length'      => 3,
             'result_limit'           => 10,
             'fuzzy_search'           => true,
+            'wildcard_search'        => true,
             'restrict_search_fields' => []
         ]);
     }
