@@ -62,6 +62,7 @@ class SearchOutputChannel implements OutputChannelInterface
         ]);
 
         $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
+        $optionsResolver->setAllowedTypes('fuzzy_search', ['bool']);
     }
 
     /**
