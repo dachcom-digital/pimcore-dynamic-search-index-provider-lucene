@@ -128,8 +128,6 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         Query\Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
-        Lucene\Lucene::setResultSetLimit($this->options['result_limit']);
-
         $query = new Query\Boolean();
         $userQuery = QueryParser::parse($parsedQueryTerm, 'utf-8');
 
@@ -152,24 +150,24 @@ class SuggestionsOutputChannel implements OutputChannelInterface
             return [];
         }
 
+        $userLocale = $this->outputChannelContext->getRuntimeQueryProvider()->getUserLocale();
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE, $userLocale)
         ]);
 
         /** @var Lucene\SearchIndexInterface $index */
         $index = $eventData->getParameter('index');
 
-        $hits = $index->find($query);
+        $result = $index->find($query);
 
-        $suggestions = [];
-        foreach ($hits as $hit) {
-            $suggestions[] = $hit;
+        if(count($result) > $this->options['result_limit']) {
+            $result = array_slice($result, 0, $this->options['result_limit']);
         }
 
         $eventData = $this->eventDispatcher->dispatchAction('post_result_execute', [
-            'result' => $suggestions,
+            'result' => $result,
         ]);
 
         return $eventData->getParameter('result');
