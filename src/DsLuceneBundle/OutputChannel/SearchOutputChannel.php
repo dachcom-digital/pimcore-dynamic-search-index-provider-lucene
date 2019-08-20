@@ -135,12 +135,6 @@ class SearchOutputChannel implements OutputChannelInterface
 
         Query\Wildcard::setMinPrefixLength($this->options['min_prefix_length']);
 
-        // we need to set result limit to 1000 by default
-        // lucene does not have any offset feature
-        // each hit returns a "lazy-loaded" document
-        // so we need to get rid of paging in a later process
-        Lucene\Lucene::setResultSetLimit($this->options['result_limit']);
-
         $query = new Query\Boolean();
         $userQuery = QueryParser::parse($parsedQueryTerm, 'utf-8');
 
@@ -174,6 +168,10 @@ class SearchOutputChannel implements OutputChannelInterface
         $index = $eventData->getParameter('index');
 
         $result = $index->find($query);
+
+        if(count($result) > $this->options['result_limit']) {
+            $result = array_slice($result, 0, $this->options['result_limit']);
+        }
 
         $eventData = $this->eventDispatcher->dispatchAction('post_result_execute', [
             'result' => $result,
