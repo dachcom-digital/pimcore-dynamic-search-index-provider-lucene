@@ -73,6 +73,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
      * @param string $word
      *
      * @return string|null
+     *
      * @throws \Exception
      */
     protected function stem($word)
@@ -93,13 +94,18 @@ class SnowBallStemmingFilter implements TokenFilterInterface
      */
     protected function stemByExtension($word)
     {
-        return stemword($word, $this->locale, 'UTF_8');
+        // phpstan does not allow dynamic function check via function_exists
+        $stemwordFunction = 'stemword';
+        if (is_callable($stemwordFunction)) {
+            return $stemwordFunction($word, $this->locale, 'UTF_8');
+        }
     }
 
     /**
      * @param string $sourceStr
      *
      * @return string|null
+     *
      * @throws \Exception
      */
     protected function stemByPhpSnowball($sourceStr)
@@ -124,6 +130,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
 
     /**
      * @return string|null
+     *
      * @throws \Exception
      */
     protected function getStemmingClass()

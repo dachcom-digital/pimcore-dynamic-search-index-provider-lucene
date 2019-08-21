@@ -3,15 +3,14 @@
 namespace DsLuceneBundle\Modifier;
 
 /**
- * @package DsLuceneBundle\Modifier
- * @see     https://framework.zend.com/manual/2.1/en/modules/zendsearch.lucene.query-language.html
+ * @see https://framework.zend.com/manual/2.1/en/modules/zendsearch.lucene.query-language.html
  */
 class TermModifier
 {
     /**
      * Default Behaviour:
      * Input: "my awesome search query"
-     * Output: ["awesome", "search", "query"]
+     * Output: ["awesome", "search", "query"].
      *
      * @param string $query
      * @param int    $minPrefixLength
@@ -28,11 +27,11 @@ class TermModifier
         $cleanTerms = [];
 
         foreach ($terms as $term) {
-
             preg_match_all('/[\p{L}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
 
             if (!is_array($match[0])) {
                 $cleanTerms[] = $term;
+
                 continue;
             }
 
@@ -44,7 +43,6 @@ class TermModifier
             $cleanTerms = array_merge($cleanTerms, array_values(array_filter($specialTerms, function ($t) use ($minPrefixLength) {
                 return strlen($t) >= $minPrefixLength;
             })));
-
         }
 
         return $maxTerms === 0 ? $cleanTerms : array_slice($cleanTerms, 0, $maxTerms);
@@ -77,7 +75,7 @@ class TermModifier
     }
 
     /**
-     * @param $str
+     * @param string $str
      *
      * @return mixed
      */

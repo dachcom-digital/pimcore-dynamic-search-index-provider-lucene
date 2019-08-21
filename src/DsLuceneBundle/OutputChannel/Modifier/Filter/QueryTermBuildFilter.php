@@ -53,7 +53,6 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
 
         // 2. OR search for each fuzzy term
         if ($enableFuzzySearch === true) {
-
             $terms = [];
             $splitTerms = $this->termModifier->splitTerm($cleanTerm, $minPrefixLength, 10);
             foreach ($splitTerms as $i => $queryTerm) {
@@ -66,12 +65,10 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             }
 
             $query[] = sprintf('(%s)', join(' OR ', $terms));
-
         }
 
         // 2. OR search for each wildcard term
         if ($enableWildcardSearch === true) {
-
             $terms = [];
             $splitTerms = $this->termModifier->splitTerm($cleanTerm, $minPrefixLength, 10);
             foreach ($splitTerms as $i => $queryTerm) {
@@ -84,7 +81,6 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             }
 
             $query[] = sprintf('(%s)', join(' OR ', $terms));
-
         }
 
         if ($enableFuzzySearch === false && $enableFuzzySearch === false) {
@@ -94,12 +90,11 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
         $query = join(' OR ', $query);
 
         return $query;
-
     }
 
     /**
-     * @param array $restrictedSearchFields
-     * @param       $term
+     * @param array  $restrictedSearchFields
+     * @param string $term
      *
      * @return array
      */

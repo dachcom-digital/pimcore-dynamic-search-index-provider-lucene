@@ -2,7 +2,6 @@
 
 namespace DsLuceneBundle\Lucene\Analyzer;
 
-use ZendSearch\Exception\ExceptionInterface;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\Utf8\CaseInsensitive;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
@@ -15,7 +14,6 @@ class DefaultAnalyzerBuilder
      * @param bool        $isIndexMode
      *
      * @return CaseInsensitive
-     * @throws ExceptionInterface
      */
     public function build(array $analyzerOptions, ?string $locale = null, $isIndexMode = false)
     {
@@ -72,7 +70,6 @@ class DefaultAnalyzerBuilder
         }
 
         foreach ($stopWordsLibraries as $library) {
-
             $locale = isset($library['locale']) ? $library['locale'] : null;
             $file = isset($library['file']) ? $library['file'] : null;
 
@@ -101,7 +98,6 @@ class DefaultAnalyzerBuilder
         }
 
         foreach ($filterBlocks as $filterBlock) {
-
             $onIndexTime = isset($filterBlock['on_index_time']) && is_bool($filterBlock['on_index_time']) ? $filterBlock['on_index_time'] : true;
             $onQueryTime = isset($filterBlock['on_query_time']) && is_bool($filterBlock['on_query_time']) ? $filterBlock['on_query_time'] : true;
             $isLocaleAware = isset($filterBlock['locale_aware']) && is_bool($filterBlock['locale_aware']) ? $filterBlock['locale_aware'] : false;
@@ -127,7 +123,6 @@ class DefaultAnalyzerBuilder
             }
 
             $analyzer->addFilter($filter);
-
         }
     }
 
@@ -143,6 +138,5 @@ class DefaultAnalyzerBuilder
             [__DIR__ . '/StopWords/libraries'],
             $path
         );
-
     }
 }

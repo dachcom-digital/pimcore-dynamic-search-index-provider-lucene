@@ -289,6 +289,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      * @param string|null $locale
      *
      * @return SearchIndexInterface
+     *
      * @throws LuceneException
      */
     protected function getStableIndex(?string $locale = null)
@@ -300,6 +301,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      * @param string|null $locale
      *
      * @return SearchIndexInterface
+     *
      * @throws LuceneException
      */
     protected function getGenesisIndex(?string $locale = null)

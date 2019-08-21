@@ -162,7 +162,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
 
         $result = $index->find($query);
 
-        if(count($result) > $this->options['result_limit']) {
+        if (count($result) > $this->options['result_limit']) {
             $result = array_slice($result, 0, $this->options['result_limit']);
         }
 

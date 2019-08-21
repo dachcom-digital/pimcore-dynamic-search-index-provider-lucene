@@ -21,8 +21,6 @@ class LuceneStorageBuilder
      */
     protected $filesystem;
 
-    /**
-     */
     public function __construct()
     {
         $this->filesystem = new Filesystem();
