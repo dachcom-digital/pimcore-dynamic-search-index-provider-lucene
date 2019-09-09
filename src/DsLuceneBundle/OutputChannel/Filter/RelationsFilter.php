@@ -3,6 +3,7 @@
 namespace DsLuceneBundle\OutputChannel\Filter;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
+use DsLuceneBundle\Exception\LuceneException;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\Filter\FilterInterface;
@@ -10,6 +11,7 @@ use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene;
 use ZendSearch\Lucene\Search\Query;
+use ZendSearch\Lucene\Search\QueryParser;
 
 class RelationsFilter implements FilterInterface
 {
@@ -53,14 +55,16 @@ class RelationsFilter implements FilterInterface
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setRequired(['identifier', 'value', 'label', 'show_in_frontend', 'relation_label']);
+        $resolver->setRequired(['identifier', 'value', 'label', 'show_in_frontend', 'relation_label', 'query_behaviour']);
         $resolver->setAllowedTypes('show_in_frontend', ['bool']);
+        $resolver->setAllowedValues('query_behaviour', ['main_query', 'sub_query']);
         $resolver->setAllowedTypes('identifier', ['string']);
         $resolver->setAllowedTypes('label', ['string', 'null']);
         $resolver->setAllowedTypes('relation_label', ['closure', 'null']);
 
         $resolver->setDefaults([
             'show_in_frontend' => true,
+            'query_behaviour'  => 'sub_query',
             'relation_label'   => null,
             'label'            => null
         ]);
@@ -143,10 +147,6 @@ class RelationsFilter implements FilterInterface
      */
     public function buildViewVars($filterValues, $result, $query)
     {
-        if (!$query instanceof Query\Boolean) {
-            return null;
-        }
-
         $viewVars = [
             'template' => sprintf('%s/relations.html.twig', self::VIEW_TEMPLATE_PATH),
             'label'    => $this->options['label'],
@@ -170,44 +170,11 @@ class RelationsFilter implements FilterInterface
             $filterNames[] = $fieldName;
         }
 
-        $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
-        $queryFields = $runtimeOptions['request_query_vars'];
-        $prefix = $runtimeOptions['prefix'];
-
         $values = [];
-        foreach ($filterNames as $filterName) {
-            $filterQuery = new Query\Boolean();
-            $filterQuery->addSubquery($query, true);
-
-            $q = new Query\Term(new Lucene\Index\Term($this->options['value'], $filterName));
-
-            $filterQuery->addSubquery($q, true);
-            $filterHits = $index->find($filterQuery);
-
-            if (count($filterHits) === 0) {
-                continue;
-            }
-
-            $active = false;
-            if (isset($queryFields[$filterName]) && $queryFields[$filterName] === $this->options['value']) {
-                $active = true;
-            }
-
-            $relationLabel = null;
-            if ($this->options['relation_label'] !== null) {
-                $relationLabel = call_user_func($this->options['relation_label'], $filterName);
-            } else {
-                $relationLabel = $filterName;
-            }
-
-            $values[] = [
-                'name'           => $filterName,
-                'form_name'      => $prefix !== null ? sprintf('%s[%s]', $prefix, $filterName) : $filterName,
-                'value'          => $this->options['value'],
-                'count'          => count($filterHits),
-                'active'         => $active,
-                'relation_label' => $relationLabel
-            ];
+        if ($this->options['query_behaviour'] === 'main_query') {
+            $values = $this->filterInMainQuery($result, $filterNames);
+        } elseif ($this->options['query_behaviour'] === 'sub_query') {
+            $values = $this->filterInSubQuery($query, $filterNames);
         }
 
         if (count($values) === 0) {
@@ -217,5 +184,138 @@ class RelationsFilter implements FilterInterface
         $viewVars['values'] = $values;
 
         return $viewVars;
+    }
+
+    /**
+     * @param array $result
+     * @param array $filterNames
+     *
+     * @return array
+     */
+    protected function filterInMainQuery($result, $filterNames)
+    {
+        if (!is_array($result)) {
+            return [];
+        }
+
+        return $this->buildResultArray($result, $filterNames);
+    }
+
+    /**
+     * @param Query\Boolean $mainQuery
+     * @param array         $filterNames
+     *
+     * @return array
+     * @throws LuceneException
+     */
+    protected function filterInSubQuery($mainQuery, $filterNames)
+    {
+        if (!$mainQuery instanceof Query\Boolean) {
+            return [];
+        }
+
+        $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
+        $eventData = $this->eventDispatcher->dispatchAction('build_index', [
+            'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
+        ]);
+
+        /** @var Lucene\SearchIndexInterface $index */
+        $index = $eventData->getParameter('index');
+
+        $filterQuery = new Query\Boolean();
+        $filterQuery->addSubquery($mainQuery, true);
+
+        $queries = [];
+        foreach ($filterNames as $filterName) {
+            $queries[] = sprintf('%s:%s', $filterName, $this->options['value']);
+        }
+
+        $userQuery = QueryParser::parse(sprintf('(%s)', join(' OR ', $queries)), 'utf-8');
+
+        $filterQuery->addSubquery($userQuery, true);
+        $filterHits = $index->find($filterQuery);
+
+        return $this->buildResultArray($filterHits, $filterNames);
+    }
+
+    /**
+     * @param array $result
+     * @param array $filterNames
+     *
+     * @return array
+     */
+    protected function buildResultArray(array $result, array $filterNames)
+    {
+        $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
+        $queryFields = $runtimeOptions['request_query_vars'];
+        $prefix = $runtimeOptions['prefix'];
+
+        $value = $this->options['value'];
+
+        $filterData = [];
+
+        /** @var Lucene\Search\QueryHit $resultDoc */
+        foreach ($result as $resultDoc) {
+            $document = $resultDoc->getDocument();
+            $fields = $document->getFieldNames();
+
+            $allowedFields = array_values(
+                array_filter($fields, function ($field) use ($filterNames, $document, $value) {
+
+                    if (!in_array($field, $filterNames)) {
+                        return false;
+                    }
+
+                    $fieldValue = $document->getField($field)->getUtf8Value();
+
+                    return $fieldValue === $value;
+                })
+            );
+
+            if (count($allowedFields) === 0) {
+                continue;
+            }
+
+            foreach ($allowedFields as $fieldName) {
+
+                if (!isset($filterData[$fieldName])) {
+                    $filterData[$fieldName] = 1;
+                    continue;
+                }
+
+                $filterData[$fieldName]++;
+            }
+        }
+
+        if (count($filterData) === 0) {
+            return [];
+        }
+
+        $values = [];
+        foreach ($filterData as $fieldName => $fieldCount) {
+
+            $relationLabel = null;
+            if ($this->options['relation_label'] !== null) {
+                $relationLabel = call_user_func($this->options['relation_label'], $fieldName);
+            } else {
+                $relationLabel = $fieldName;
+            }
+
+            $active = false;
+            if (isset($queryFields[$fieldName]) && $queryFields[$fieldName] === $this->options['value']) {
+                $active = true;
+            }
+
+            $values[] = [
+                'name'           => $fieldName,
+                'form_name'      => $prefix !== null ? sprintf('%s[%s]', $prefix, $fieldName) : $fieldName,
+                'value'          => $this->options['value'],
+                'count'          => $fieldCount,
+                'active'         => $active,
+                'relation_label' => $relationLabel
+            ];
+        }
+
+        return $values;
     }
 }
