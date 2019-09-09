@@ -50,6 +50,7 @@ class SuggestionsOutputChannel implements OutputChannelInterface
         $optionsResolver->setRequired([
             'min_prefix_length',
             'result_limit',
+            'phrased_search',
             'fuzzy_search',
             'wildcard_search',
             'restrict_search_fields'
@@ -58,10 +59,16 @@ class SuggestionsOutputChannel implements OutputChannelInterface
         $optionsResolver->setDefaults([
             'min_prefix_length'      => 3,
             'result_limit'           => 10,
-            'fuzzy_search'           => true,
-            'wildcard_search'        => true,
+            'phrased_search'         => false,
+            'fuzzy_search'           => false,
+            'wildcard_search'        => false,
             'restrict_search_fields' => []
         ]);
+
+        $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
+        $optionsResolver->setAllowedTypes('phrased_search', ['bool']);
+        $optionsResolver->setAllowedTypes('fuzzy_search', ['bool']);
+        $optionsResolver->setAllowedTypes('wildcard_search', ['bool']);
     }
 
     /**
