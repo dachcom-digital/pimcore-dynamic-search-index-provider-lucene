@@ -7,7 +7,6 @@ use DsLuceneBundle\Event\AnalzyerEvent;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
-use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\Utf8\CaseInsensitive;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
 use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
@@ -140,7 +139,7 @@ class AnalyzerFactory
     {
         $filter = null;
 
-        $isLocaleAware = isset($filterBlock['locale_aware']) && is_bool($filterOptions['locale_aware']) ? $filterOptions['locale_aware'] : false;
+        $isLocaleAware = isset($filterOptions['locale_aware']) && is_bool($filterOptions['locale_aware']) ? $filterOptions['locale_aware'] : false;
         $filterClass = isset($filterOptions['class']) ? $filterOptions['class'] : SnowBallStemmingFilter::class;
 
         if ($filterClass === null) {
