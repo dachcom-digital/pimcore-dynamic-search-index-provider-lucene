@@ -5,7 +5,7 @@ namespace DsLuceneBundle\Service;
 use DsLuceneBundle\Configuration\ConfigurationInterface;
 use DsLuceneBundle\DsLuceneBundle;
 use DsLuceneBundle\Exception\LuceneException;
-use DsLuceneBundle\Lucene\Analyzer\DefaultAnalyzerBuilder;
+use DsLuceneBundle\Factory\AnalyzerFactory;
 use DynamicSearchBundle\Exception\ProviderException;
 use Symfony\Component\Filesystem\Filesystem;
 use ZendSearch\Lucene\Analysis\Analyzer\Analyzer;
@@ -21,9 +21,18 @@ class LuceneStorageBuilder
      */
     protected $filesystem;
 
-    public function __construct()
+    /**
+     * @var AnalyzerFactory
+     */
+    protected $analyzerFactory;
+
+    /**
+     * @param AnalyzerFactory $analyzerFactory
+     */
+    public function __construct(AnalyzerFactory $analyzerFactory)
     {
         $this->filesystem = new Filesystem();
+        $this->analyzerFactory = $analyzerFactory;
     }
 
     /**
@@ -107,10 +116,8 @@ class LuceneStorageBuilder
     {
         QueryParser::setDefaultEncoding('utf-8');
 
-        $builder = new DefaultAnalyzerBuilder();
-
         try {
-            $analyzer = $builder->build($providerOptions['analyzer'], $locale, $isIndexMode);
+            $analyzer = $this->analyzerFactory->build($providerOptions['analyzer'], $locale, $isIndexMode);
         } catch (ExceptionInterface $e) {
             throw new LuceneException($e->getMessage(), $e);
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace DsLuceneBundle\Lucene\Analyzer\Stemming;
+namespace DsLuceneBundle\Lucene\Filter\Stemming;
 
 use Wamania\Snowball\Stemmer;
 use ZendSearch\Lucene\Analysis\Token;

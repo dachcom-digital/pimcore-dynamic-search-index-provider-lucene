@@ -24,6 +24,9 @@
         "dachcom-digital/zendsearch": "^3.0",
         "wamania/php-stemmer": "~1.2"
     },
+    "suggest": {
+        "org_heigl/hyphenator": "^2.3"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "0.6-dev"

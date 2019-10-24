@@ -8,7 +8,7 @@
 A Index Storage Extension for [Pimcore Dynamic Search](https://github.com/dachcom-digital/pimcore-dynamic-search). Store data with the PHP Lucene index service.
 
 ## Requirements
-- Pimcore >= 5.8.0
+- Pimcore >= 5.8 | >= 6.0
 - Pimcore Dynamic Search
 
 ***
@@ -34,12 +34,12 @@ dynamic_search:
 |:-------------------------------------|:-----------------------|:------------|
 |`database_name`                       | null                   |             |
 |`force_adding_document`               | true                   |             |
+|`analyzer`                            | []                     |             |
 
 ***
 
 ## Index Fields
-
-Available Index Fields:
+**Available Index Fields**:   
 
 | Name              | Description |
 |:------------------|:------------|
@@ -54,9 +54,8 @@ Available Index Fields:
 ## Output Channel Services
 
 ### Autocomplete
-Identifier: `lucene_autocomplete`
-
-Available Options:
+**Identifier**: `lucene_autocomplete`   
+**Available Options**:   
 
 | Name                             | Default Value | Description |
 |:---------------------------------|:--------------|:------------|
@@ -66,9 +65,8 @@ Available Options:
 |`fuzzy_similarity`                | 0.5           |             |
 
 ### Suggestions
-Identifier: `lucene_suggestions`
-
-Available Options:
+**Identifier**: `lucene_suggestions`   
+**Available Options**:   
 
 | Name                             | Default Value | Description |
 |:---------------------------------|:--------------|:------------|
@@ -80,9 +78,8 @@ Available Options:
 |`restrict_search_fields_operator` | 'OR'          |             |
 
 ### Search
-Identifier: `lucene_search`
-
-Available Options:
+**Identifier**: `lucene_search`   
+**Available Options**:   
 
 | Name                             | Default Value | Description |
 |:---------------------------------|:--------------|:------------|
@@ -90,20 +87,18 @@ Available Options:
 |`max_per_page`                    | 10            |             |
 
 ### Multi Search
-Identifier: `lucene_multi_search`
-
-Available Options: none
+**Identifier**: `lucene_multi_search`   
+**Available Options**: none
 
 ***
 
 ## Filter
 
 ### RelationsFilter
-Identifier: `relations`
+**Identifier**: `relations`   
+**Available Options**:   
 
-Available Options:
-
-| Name                      | Default Value | | Allowed Type    | Description |
+| Name                      | Default Value | Allowed Type      | Description |
 |:--------------------------|:--------------|:------------------|:------------|
 |`identifier`               | null          | string            |             |
 |`value`                    | null          | string            |             |
@@ -113,13 +108,17 @@ Available Options:
 
 
 ## Output Normalizer
-
 A Output Normalizer can be defined for each output channel.
 
 ### lucene_document_key_value_normalizer
 
-Available Options:
+**Available Options**:   
 
 | Name                       | Default Value | Description |
 |----------------------------|---------------|-------------|
 |`skip_fields`               | []            |             |
+
+## Further Information
+- Lucene Configuration
+    - [Custom Analyzer](./docs/0_Custom_Analyzer.md) (Example: Syllable Analzyer)
+    - [Lucene Token Filter](./docs/1_CustomTokenFilter.md) (Stemming Filter, Stop Words Filter)
