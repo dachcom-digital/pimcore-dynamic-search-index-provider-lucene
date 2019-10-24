@@ -120,5 +120,5 @@ A Output Normalizer can be defined for each output channel.
 
 ## Further Information
 - Lucene Configuration
-    - [Custom Analyzer](./docs/0_Custom_Analyzer.md) (Example: Syllable Analzyer)
+    - [Custom Analyzer](./docs/0_Custom_Analyzer.md) (Example: Syllable Analyzer)
     - [Lucene Token Filter](./docs/1_CustomTokenFilter.md) (Stemming Filter, Stop Words Filter)

@@ -36,7 +36,7 @@ class LuceneAnalyzerListener
 
 ## Syllable Analyzer
 
-The Lucene Data Provider Bundles comes with a pre-configured Syllable Analyzer, which is disabled by default.
+The Lucene Data Provider Bundles comes with a pre-configured Syllable Analyzer, which is **disabled by default**.
 The Syllable Analyzer allows you to split your indexable strings into reasonable chunks, based on a given locale.
 To achive this, we're using the [OrgHeiglHyphenator Library](https://github.com/heiglandreas/Org_Heigl_Hyphenator) library ([Documentation](https://orgheiglhyphenator.readthedocs.io/en/latest/)).
 
@@ -44,10 +44,10 @@ To achive this, we're using the [OrgHeiglHyphenator Library](https://github.com/
 
 Example Data: `We have some really long words in german like sauerstofffeldflasche` 
 
-1. Split Data: `We have some re al ly long words in ger man like sau er stoff feld fla sche.`
-2. Add Original Data: `We have some really long words in german like sauerstofffeldflasche We have some re al ly long words in ger man like sau er stoff feld fla sche.` 
-3. Final Unique Data: `We have some really long words in german like sauerstofffeldflasche re al ly ger man sau er stoff feld fla sche.`
-4. Send Data to Tokenizr. If you also have enabled the [stopwords filter](./1_CustomTokenFilter.md), you can get rid of unnecessary words like `er`, `re` too.
+1. **Split Data**: `We have some re al ly long words in ger man like sau er stoff feld fla sche.`
+2. **Add Original Data**: `We have some really long words in german like sauerstofffeldflasche We have some re al ly long words in ger man like sau er stoff feld fla sche.` 
+3. **Final Unique Data**: `We have some really long words in german like sauerstofffeldflasche re al ly ger man sau er stoff feld fla sche.`
+4. Send Data to Tokenizer. If you also have enabled the [stopwords filter](./1_CustomTokenFilter.md), you can get rid of unnecessary words like `er` or `re` too.
 
 ### Setup
 
@@ -68,7 +68,7 @@ AppBundle\EventListener\LuceneSyllableAnalyzerListener:
 ```
 
 ### Service
-Finally, add the service.
+Finally, add the service:
 
 ```php
 <?php
@@ -89,7 +89,7 @@ class LuceneSyllableAnalyzerListener
         // 
         // Important thing here!
         //
-        // Do not use the syllable analyzer on indexing time only!
+        // Use the syllable analyzer on indexing time only!
         // we don't want/need to tokenize a users input on query time
         // returning nothing triggers the default fallback => CaseInsensitive Analyzer 
 
