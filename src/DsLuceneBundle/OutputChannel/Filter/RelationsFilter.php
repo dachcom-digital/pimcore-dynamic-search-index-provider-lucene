@@ -206,6 +206,7 @@ class RelationsFilter implements FilterInterface
      * @param array         $filterNames
      *
      * @return array
+     *
      * @throws LuceneException
      */
     protected function filterInSubQuery($mainQuery, $filterNames)
@@ -261,7 +262,6 @@ class RelationsFilter implements FilterInterface
 
             $allowedFields = array_values(
                 array_filter($fields, function ($field) use ($filterNames, $document, $value) {
-
                     if (!in_array($field, $filterNames)) {
                         return false;
                     }
@@ -277,9 +277,9 @@ class RelationsFilter implements FilterInterface
             }
 
             foreach ($allowedFields as $fieldName) {
-
                 if (!isset($filterData[$fieldName])) {
                     $filterData[$fieldName] = 1;
+
                     continue;
                 }
 
@@ -293,7 +293,6 @@ class RelationsFilter implements FilterInterface
 
         $values = [];
         foreach ($filterData as $fieldName => $fieldCount) {
-
             $relationLabel = null;
             if ($this->options['relation_label'] !== null) {
                 $relationLabel = call_user_func($this->options['relation_label'], $fieldName);

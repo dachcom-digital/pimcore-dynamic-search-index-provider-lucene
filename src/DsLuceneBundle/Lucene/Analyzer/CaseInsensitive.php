@@ -6,5 +6,4 @@ use ZendSearch\Lucene\Analysis\Analyzer\Common;
 
 class CaseInsensitive extends Common\Utf8\CaseInsensitive
 {
-
 }

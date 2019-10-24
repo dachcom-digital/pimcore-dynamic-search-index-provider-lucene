@@ -70,7 +70,6 @@ class AnalyzerFactory
     public function addAnalyzerFilter(AnalyzerInterface $analyzer, array $filterData, bool $isIndexMode, ?string $currentLocale)
     {
         foreach ($filterData as $filterName => $filterOptions) {
-
             $filter = null;
 
             if ($this->filterIsActive($filterOptions, $isIndexMode) === false) {

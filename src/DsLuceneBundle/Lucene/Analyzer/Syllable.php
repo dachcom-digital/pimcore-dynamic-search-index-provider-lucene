@@ -27,6 +27,7 @@ class Syllable extends CaseInsensitive
 
         if (is_numeric($data)) {
             $this->setRealInput([], $data, $encoding);
+
             return;
         }
 
@@ -42,7 +43,6 @@ class Syllable extends CaseInsensitive
             } elseif (is_string($hyphenated)) {
                 $hyphenTerms[] = $hyphenated;
             }
-
         }
 
         if (count($hyphenTerms) > 0) {
@@ -59,7 +59,6 @@ class Syllable extends CaseInsensitive
         $terms = array_unique($terms);
 
         $this->setRealInput($terms, $data, $encoding);
-
     }
 
     /**
@@ -116,5 +115,4 @@ class Syllable extends CaseInsensitive
 
         return $o;
     }
-
 }

@@ -69,7 +69,6 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
         $query = join(' OR ', $query);
 
         return $query;
-
     }
 
     /**
