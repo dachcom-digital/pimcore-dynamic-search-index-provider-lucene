@@ -6,7 +6,7 @@ use DsLuceneBundle\DsLuceneEvents;
 use DsLuceneBundle\Event\AnalzyerEvent;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
+use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\Utf8\CaseInsensitive;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
 use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
@@ -50,7 +50,7 @@ class AnalyzerFactory
 
         $analyzer = $event->getAnalyzer();
 
-        if (!$analyzer instanceof AnalyzerInterface) {
+        if (!$analyzer instanceof AbstractCommon) {
             $analyzer = new CaseInsensitive();
         }
 
@@ -62,12 +62,12 @@ class AnalyzerFactory
     }
 
     /**
-     * @param AnalyzerInterface $analyzer
-     * @param array             $filterData
-     * @param bool              $isIndexMode
-     * @param string|null       $currentLocale
+     * @param AbstractCommon $analyzer
+     * @param array          $filterData
+     * @param bool           $isIndexMode
+     * @param string|null    $currentLocale
      */
-    public function addAnalyzerFilter(AnalyzerInterface $analyzer, array $filterData, bool $isIndexMode, ?string $currentLocale)
+    public function addAnalyzerFilter(AbstractCommon $analyzer, array $filterData, bool $isIndexMode, ?string $currentLocale)
     {
         foreach ($filterData as $filterName => $filterOptions) {
             $filter = null;
