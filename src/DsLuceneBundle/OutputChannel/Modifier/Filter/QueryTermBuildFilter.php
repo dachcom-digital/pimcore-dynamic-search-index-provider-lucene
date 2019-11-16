@@ -62,7 +62,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
         }
 
         // add simple query if fuzzy and wild card search has been disabled
-        if ($enableFuzzySearch === false && $enableFuzzySearch === false) {
+        if ($enableFuzzySearch === false && $enableWildcardSearch === false) {
             $query[] = $this->addSimpleQuery($cleanTerm, $outputChannelOptions);
         }
 
