@@ -27,7 +27,7 @@ class TermModifier
         $cleanTerms = [];
 
         foreach ($terms as $term) {
-            preg_match_all('/[\p{L}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
+            preg_match_all('/[\p{L}\p{N}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
 
             if (!is_array($match[0])) {
                 $cleanTerms[] = $term;
