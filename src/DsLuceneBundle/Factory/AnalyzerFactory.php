@@ -4,10 +4,10 @@ namespace DsLuceneBundle\Factory;
 
 use DsLuceneBundle\DsLuceneEvents;
 use DsLuceneBundle\Event\AnalzyerEvent;
+use DsLuceneBundle\Lucene\Analyzer\CaseInsensitive;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
-use ZendSearch\Lucene\Analysis\Analyzer\Common\Utf8\CaseInsensitive;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
 use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
 
