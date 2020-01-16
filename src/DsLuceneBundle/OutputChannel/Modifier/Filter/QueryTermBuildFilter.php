@@ -66,7 +66,9 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             $query[] = $this->addSimpleQuery($cleanTerm, $outputChannelOptions);
         }
 
-        $query = join(' OR ', $query);
+        $query = join(' OR ', array_filter($query, function ($value) {
+            return !is_null($value);
+        }));
 
         return $query;
     }
@@ -89,7 +91,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
      * @param string $cleanTerm
      * @param array  $options
      *
-     * @return string
+     * @return string|null
      */
     protected function addFuzzyQuery($cleanTerm, array $options)
     {
@@ -108,6 +110,10 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             $terms[] = join(' OR ', $subTerms);
         }
 
+        if (count($terms) === 0) {
+            return null;
+        }
+
         return sprintf('(%s)', join(' OR ', $terms));
     }
 
@@ -115,7 +121,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
      * @param string $cleanTerm
      * @param array  $options
      *
-     * @return string
+     * @return string|null
      */
     protected function addWildcardQuery($cleanTerm, array $options)
     {
@@ -134,6 +140,10 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             $terms[] = join(' OR ', $subTerms);
         }
 
+        if (count($terms) === 0) {
+            return null;
+        }
+
         return sprintf('(%s)', join(' OR ', $terms));
     }
 
@@ -141,7 +151,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
      * @param string $cleanTerm
      * @param array  $options
      *
-     * @return string
+     * @return string|null
      */
     protected function addSimpleQuery($cleanTerm, array $options)
     {
@@ -161,6 +171,10 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
                 $subTerms[] = $fieldTerm;
             }
             $terms[] = join(' OR ', $subTerms);
+        }
+
+        if (count($terms) === 0) {
+            return null;
         }
 
         return sprintf('(%s)', join(' OR ', $terms));
