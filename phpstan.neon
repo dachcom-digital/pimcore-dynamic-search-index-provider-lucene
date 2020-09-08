@@ -6,7 +6,7 @@ parameters:
         - %currentWorkingDirectory%/vendor/pimcore/pimcore/stubs/compatibility-v4.php
         - %currentWorkingDirectory%/vendor/pimcore/pimcore/lib/helper-functions.php
     symfony:
-        container_xml_path: var/cache/dev/appDevDebugProjectContainer.xml
+        container_xml_path: %rootDir%/../../../var/cache/test/appTestDebugProjectContainer.xml
     ignoreErrors:
         # There is no global constants definition file we could include, ignore it:
         - '#Constant PIMCORE_[A-Z\\_]+ not found\.#'
