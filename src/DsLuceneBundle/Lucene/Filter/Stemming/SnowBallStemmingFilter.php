@@ -99,6 +99,8 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         if (is_callable($stemwordFunction)) {
             return $stemwordFunction($word, $this->locale, 'UTF_8');
         }
+
+        return null;
     }
 
     /**
