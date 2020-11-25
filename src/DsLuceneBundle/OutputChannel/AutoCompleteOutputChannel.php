@@ -46,7 +46,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $optionsResolver)
     {
         $optionsResolver->setRequired([
             'min_prefix_length',

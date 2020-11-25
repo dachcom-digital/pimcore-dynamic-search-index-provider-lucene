@@ -3,7 +3,7 @@
 namespace DsLuceneBundle\Normalizer;
 
 use DsLuceneBundle\Normalizer\Helper\LuceneDocumentDataExtractor;
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Normalizer\DocumentNormalizerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene\Search\QueryHit;
@@ -18,7 +18,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public static function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['skip_fields']);
         $resolver->setAllowedTypes('skip_fields', ['string[]']);
@@ -38,7 +38,15 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function normalize(ContextDataInterface $contextData, string $outputChannelName, $data)
+    public function getOptions(array $params = [])
+    {
+        return $this->options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize(ContextDefinitionInterface $contextDefinition, string $outputChannelName, $data)
     {
         $normalizedDocuments = [];
 

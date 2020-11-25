@@ -8,7 +8,8 @@
 A Index Storage Extension for [Pimcore Dynamic Search](https://github.com/dachcom-digital/pimcore-dynamic-search). Store data with the PHP Lucene index service.
 
 ## Requirements
-- Pimcore >= 5.8 | >= 6.0
+- Pimcore >= 6.3
+- Symfony >= 4.4
 - Pimcore Dynamic Search
 
 ***

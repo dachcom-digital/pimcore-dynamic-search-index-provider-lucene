@@ -49,7 +49,7 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $optionsResolver)
     {
     }
 
