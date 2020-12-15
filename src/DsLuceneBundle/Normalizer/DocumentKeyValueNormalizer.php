@@ -4,6 +4,7 @@ namespace DsLuceneBundle\Normalizer;
 
 use DsLuceneBundle\Normalizer\Helper\LuceneDocumentDataExtractor;
 use DynamicSearchBundle\Context\ContextDefinitionInterface;
+use DynamicSearchBundle\Exception\NormalizerException;
 use DynamicSearchBundle\Normalizer\DocumentNormalizerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene\Search\QueryHit;
@@ -48,8 +49,12 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
      */
     public function normalize(ContextDefinitionInterface $contextDefinition, string $outputChannelName, $data)
     {
-        $normalizedDocuments = [];
+        if (!is_array($data)) {
+            $message = sprintf('Data needs to be type of "array", "%s" given', is_object($data) ? get_class($data) : gettype($data));
+            throw new NormalizerException($message, __CLASS__);
+        }
 
+        $normalizedDocuments = [];
         $dataExtractor = new LuceneDocumentDataExtractor();
 
         foreach ($data as $documentHit) {

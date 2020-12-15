@@ -8,6 +8,7 @@ use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\Filter\FilterInterface;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
+use DynamicSearchBundle\OutputChannel\Query\Result\RawResultInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene;
 use ZendSearch\Lucene\Search\Query;
@@ -136,7 +137,7 @@ class RelationsFilter implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function findFilterValueInResult($result)
+    public function findFilterValueInResult(RawResultInterface $rawResult)
     {
         // not supported for lucene
         return null;
@@ -145,8 +146,10 @@ class RelationsFilter implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function buildViewVars($filterValues, $result, $query)
+    public function buildViewVars(RawResultInterface $rawResult, $filterValues, $query)
     {
+        $result = $rawResult->getData();
+
         $viewVars = [
             'template' => sprintf('%s/relations.html.twig', self::VIEW_TEMPLATE_PATH),
             'label'    => $this->options['label'],

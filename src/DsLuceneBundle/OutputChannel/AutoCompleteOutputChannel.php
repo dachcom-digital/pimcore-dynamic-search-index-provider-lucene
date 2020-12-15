@@ -7,6 +7,7 @@ use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\Query\SearchContainerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene;
 use ZendSearch\Lucene\Search\Query;
@@ -135,11 +136,15 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function getResult($terms)
+    public function getResult(SearchContainerInterface $searchContainer): SearchContainerInterface
     {
-        if (!is_array($terms)) {
-            return [];
+        $query = $searchContainer->getQuery();
+
+        if (!is_array($query)) {
+            return $searchContainer;
         }
+
+        $terms = $query;
 
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
@@ -193,15 +198,12 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
             'result' => $suggestions,
         ]);
 
-        return $eventData->getParameter('result');
-    }
+        $result = $eventData->getParameter('result');
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getHitCount($result)
-    {
-        return count($result);
+        $searchContainer->result->setData($result);
+        $searchContainer->result->setHitCount(count($result));
+
+        return $searchContainer;
     }
 
     /**

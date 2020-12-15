@@ -8,16 +8,13 @@ use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\OutputChannel\Context\OutputChannelContextInterface;
 use DynamicSearchBundle\OutputChannel\MultiOutputChannelInterface;
 use DynamicSearchBundle\OutputChannel\OutputChannelInterface;
+use DynamicSearchBundle\OutputChannel\Query\MultiSearchContainerInterface;
+use DynamicSearchBundle\OutputChannel\Query\SearchContainerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene;
 
 class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputChannelInterface
 {
-    /**
-     * @var array
-     */
-    protected $subQueries;
-
     /**
      * @var OutputChannelContextInterface
      */
@@ -94,11 +91,9 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     }
 
     /**
-     * @param mixed $query
-     *
-     * @throws \Exception
+     * {@inheritdoc}
      */
-    public function getResult($query)
+    public function getResult(SearchContainerInterface $searchContainer): SearchContainerInterface
     {
         throw new \Exception('not allowed');
     }
@@ -106,21 +101,14 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     /**
      * {@inheritdoc}
      */
-    public function addSubQuery(string $subOutputChannelIdentifier, $subQuery)
-    {
-        $this->subQueries[$subOutputChannelIdentifier] = $subQuery;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getMultiSearchResult(): array
+    public function getMultiSearchResult(MultiSearchContainerInterface $multiSearchContainer): MultiSearchContainerInterface
     {
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
-        $resultList = [];
+        foreach ($multiSearchContainer->getSearchContainer() as $searchContainer) {
 
-        foreach ($this->subQueries as $subOutputChannelIdentifier => $query) {
+            $query = $searchContainer->getQuery();
+
             $eventData = $this->eventDispatcher->dispatchAction('build_index', [
                 'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
             ]);
@@ -134,17 +122,12 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
                 'result' => $result,
             ]);
 
-            $resultList[$subOutputChannelIdentifier] = $eventData->getParameter('result');
+            $result = $eventData->getParameter('result');
+
+            $searchContainer->result->setData($result);
+            $searchContainer->result->setHitCount(count($result));
         }
 
-        return $resultList;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getHitCount($query)
-    {
-        return count($query);
+        return $multiSearchContainer;
     }
 }
