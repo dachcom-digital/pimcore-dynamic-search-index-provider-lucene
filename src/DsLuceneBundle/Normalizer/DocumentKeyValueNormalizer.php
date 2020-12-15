@@ -6,6 +6,7 @@ use DsLuceneBundle\Normalizer\Helper\LuceneDocumentDataExtractor;
 use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
 use DynamicSearchBundle\Normalizer\DocumentNormalizerInterface;
+use DynamicSearchBundle\OutputChannel\Query\Result\RawResultInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ZendSearch\Lucene\Search\QueryHit;
 
@@ -47,8 +48,10 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function normalize(ContextDefinitionInterface $contextDefinition, string $outputChannelName, $data)
+    public function normalize(RawResultInterface $rawResult, ContextDefinitionInterface $contextDefinition, string $outputChannelName)
     {
+        $data = $rawResult->getData();
+
         if (!is_array($data)) {
             $message = sprintf('Data needs to be type of "array", "%s" given', is_object($data) ? get_class($data) : gettype($data));
             throw new NormalizerException($message, __CLASS__);
