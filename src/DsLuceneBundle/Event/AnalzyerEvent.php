@@ -2,7 +2,7 @@
 
 namespace DsLuceneBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 
 class AnalzyerEvent extends Event

@@ -46,7 +46,7 @@ class AnalyzerFactory
         }
 
         $event = new AnalzyerEvent($locale, $isIndexMode);
-        $this->eventDispatcher->dispatch(DsLuceneEvents::BUILD_LUCENE_ANALYZER, $event);
+        $this->eventDispatcher->dispatch($event, DsLuceneEvents::BUILD_LUCENE_ANALYZER);
 
         $analyzer = $event->getAnalyzer();
 
