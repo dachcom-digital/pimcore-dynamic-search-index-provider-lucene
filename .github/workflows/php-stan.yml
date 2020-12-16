@@ -98,7 +98,7 @@ jobs:
 
             -   name: Composer install
                 run: |
-                    composer req pimcore/pimcore:${{ matrix.pimcore }} symfony/symfony:${{ matrix.symfony }} --no-interaction --ignore-platform-reqs --no-scripts
+                    composer req pimcore/pimcore:${{ matrix.pimcore }} symfony/symfony:${{ matrix.symfony }} org_heigl/hyphenator:^2.3 --no-interaction --ignore-platform-reqs --no-scripts
                     composer install --no-progress --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
             -   name: Php Stan
