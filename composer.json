@@ -1,7 +1,7 @@
 {
     "name": "dachcom-digital/dynamic-search-index-provider-lucene",
     "type": "dynamic-search-provider-bundle",
-    "license": "GPL-3.0+",
+    "license": "GPL-3.0-or-later",
     "description": "",
     "keywords": ["pimcore", "search", "dynamic-search", "index-provider","lucene"],
     "homepage": "https://github.com/dachcom-digital/pimcore-dynamic-search-index-provider-lucene",
@@ -23,8 +23,13 @@
             "": "src/"
         },
         "classmap": [
-            "app/AppKernel.php"
+            "app/TestKernel.php"
         ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
     },
     "require": {
         "symfony/symfony": "^4|^5",
@@ -41,10 +46,5 @@
     },
     "suggest": {
         "org_heigl/hyphenator": "^2.3"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev"
-        }
     }
 }
