@@ -18,7 +18,7 @@ class TermModifier
      *
      * @return array
      */
-    public function splitTerm(string $query, int $minPrefixLength = 3, $maxTerms = 0)
+    public function splitTerm(string $query, int $minPrefixLength = 3, int $maxTerms = 0)
     {
         $terms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
             return strlen($t) >= $minPrefixLength;

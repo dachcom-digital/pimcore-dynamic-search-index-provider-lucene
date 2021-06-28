@@ -46,14 +46,14 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     /**
      * {@inheritdoc}
      */
-    public static function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $optionsResolver): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
@@ -69,7 +69,7 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     /**
      * {@inheritdoc}
      */
-    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext): void
     {
         $this->outputChannelContext = $outputChannelContext;
     }
@@ -77,7 +77,7 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
     /**
      * {@inheritdoc}
      */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }

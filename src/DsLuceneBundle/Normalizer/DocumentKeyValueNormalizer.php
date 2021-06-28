@@ -12,15 +12,12 @@ use ZendSearch\Lucene\Search\QueryHit;
 
 class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
 
     /**
      * {@inheritdoc}
      */
-    public static function configureOptions(OptionsResolver $resolver)
+    public static function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['skip_fields']);
         $resolver->setAllowedTypes('skip_fields', ['string[]']);
@@ -32,7 +29,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
@@ -40,7 +37,7 @@ class DocumentKeyValueNormalizer implements DocumentNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(array $params = [])
+    public function getOptions(array $params = []): array
     {
         return $this->options;
     }
