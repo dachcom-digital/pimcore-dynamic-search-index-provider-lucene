@@ -47,7 +47,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public static function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $optionsResolver): void
     {
         $optionsResolver->setRequired([
             'min_prefix_length',
@@ -67,7 +67,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
@@ -83,7 +83,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext): void
     {
         $this->outputChannelContext = $outputChannelContext;
     }
@@ -91,7 +91,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
     /**
      * {@inheritdoc}
      */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }

@@ -47,7 +47,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritdoc}
      */
-    public static function configureOptions(OptionsResolver $resolver)
+    public static function configureOptions(OptionsResolver $resolver): void
     {
         $defaults = [
             'database_name'         => null,
@@ -65,7 +65,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function setOptions(array $configuration)
+    public function setOptions(array $configuration): void
     {
         $this->configuration = $configuration;
     }
@@ -73,7 +73,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function warmUp(ContextDefinitionInterface $contextDefinition)
+    public function warmUp(ContextDefinitionInterface $contextDefinition): void
     {
         if ($contextDefinition->getContextDispatchType() !== ContextDefinitionInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
             return;
@@ -89,7 +89,7 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function coolDown(ContextDefinitionInterface $contextDefinition)
+    public function coolDown(ContextDefinitionInterface $contextDefinition): void
     {
         if ($contextDefinition->getContextDispatchType() !== ContextDefinitionInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
             try {
@@ -111,21 +111,21 @@ class LuceneIndexProvider implements IndexProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function cancelledShutdown(ContextDefinitionInterface $contextDefinition)
+    public function cancelledShutdown(ContextDefinitionInterface $contextDefinition): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function emergencyShutdown(ContextDefinitionInterface $contextDefinition)
+    public function emergencyShutdown(ContextDefinitionInterface $contextDefinition): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function processDocument(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument)
+    public function processDocument(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument): void
     {
         try {
             switch ($contextDefinition->getContextDispatchType()) {
@@ -157,7 +157,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function executeIndex(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument)
+    protected function executeIndex(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument): void
     {
         if (!$indexDocument->hasIndexFields()) {
             return;
@@ -181,7 +181,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function executeInsert(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument)
+    protected function executeInsert(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument): void
     {
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
@@ -211,7 +211,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function executeUpdate(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument)
+    protected function executeUpdate(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument): void
     {
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
@@ -257,7 +257,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function executeDelete(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument)
+    protected function executeDelete(ContextDefinitionInterface $contextDefinition, IndexDocument $indexDocument): void
     {
         if (!$this->storageBuilder->indexExists($this->configuration['database_name'], ConfigurationInterface::INDEX_BASE_STABLE)) {
             $this->logger->error(
@@ -292,7 +292,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function getStableIndex(?string $locale = null)
+    protected function getStableIndex(?string $locale = null): SearchIndexInterface
     {
         return $this->storageBuilder->getLuceneIndex($this->configuration, ConfigurationInterface::INDEX_BASE_STABLE, $locale, true);
     }
@@ -304,7 +304,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @throws LuceneException
      */
-    protected function getGenesisIndex(?string $locale = null)
+    protected function getGenesisIndex(?string $locale = null): SearchIndexInterface
     {
         return $this->storageBuilder->getLuceneIndex($this->configuration, ConfigurationInterface::INDEX_BASE_GENESIS, $locale, true);
     }
@@ -314,7 +314,7 @@ class LuceneIndexProvider implements IndexProviderInterface
      *
      * @return string|null
      */
-    protected function getLocaleFromIndexDocumentResource(IndexDocument $indexDocument)
+    protected function getLocaleFromIndexDocumentResource(IndexDocument $indexDocument): ?string
     {
         $locale = null;
         $normalizerOptions = $indexDocument->getResourceMeta()->getNormalizerOptions();

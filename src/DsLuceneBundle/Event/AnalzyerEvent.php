@@ -7,59 +7,32 @@ use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 
 class AnalzyerEvent extends Event
 {
-    /**
-     * @var string|null
-     */
-    protected $locale;
+    protected ?string $locale = null;
+    protected bool $isIndexMode;
+    protected ?AnalyzerInterface $analyzer = null;
 
-    /**
-     * @var bool
-     */
-    protected $isIndexMode;
-
-    /**
-     * @var AnalyzerInterface
-     */
-    protected $analyzer;
-
-    /**
-     * @param string|null $locale
-     * @param bool        $isIndexMode
-     */
-    public function __construct(?string $locale = null, $isIndexMode = false)
+    public function __construct(?string $locale = null, bool $isIndexMode = false)
     {
         $this->locale = $locale;
         $this->isIndexMode = $isIndexMode;
     }
 
-    /**
-     * @return string
-     */
-    public function getLocale()
+    public function getLocale(): ?string
     {
         return $this->locale;
     }
 
-    /**
-     * @return bool
-     */
-    public function isIndexMode()
+    public function isIndexMode(): bool
     {
         return $this->isIndexMode;
     }
 
-    /**
-     * @return string
-     */
-    public function getAnalyzer()
+    public function getAnalyzer(): ?AnalyzerInterface
     {
         return $this->analyzer;
     }
 
-    /**
-     * @param AnalyzerInterface $analyzer
-     */
-    public function setAnalyzer(AnalyzerInterface $analyzer)
+    public function setAnalyzer(AnalyzerInterface $analyzer): void
     {
         $this->analyzer = $analyzer;
     }
