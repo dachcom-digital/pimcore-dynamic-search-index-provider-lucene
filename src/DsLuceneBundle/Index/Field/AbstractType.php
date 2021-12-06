@@ -6,5 +6,5 @@ use DynamicSearchBundle\Index\IndexFieldInterface;
 
 abstract class AbstractType implements IndexFieldInterface
 {
-    const UTF8 = 'UTF-8';
+    public const UTF8 = 'UTF-8';
 }

@@ -15,40 +15,19 @@ use ZendSearch\Lucene\Search\QueryParser;
 
 class SearchOutputChannel implements OutputChannelInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
+    protected OutputChannelContextInterface $outputChannelContext;
+    protected LuceneStorageBuilder $storageBuilder;
+    protected OutputChannelModifierEventDispatcher $eventDispatcher;
 
-    /**
-     * @var OutputChannelContextInterface
-     */
-    protected $outputChannelContext;
-
-    /**
-     * @var LuceneStorageBuilder
-     */
-    protected $storageBuilder;
-
-    /**
-     * @var OutputChannelModifierEventDispatcher
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @param LuceneStorageBuilder $storageBuilder
-     */
     public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $resolver): void
     {
-        $optionsResolver->setRequired([
+        $resolver->setRequired([
             'min_prefix_length',
             'result_limit',
             'phrased_search',
@@ -57,7 +36,7 @@ class SearchOutputChannel implements OutputChannelInterface
             'restrict_search_fields'
         ]);
 
-        $optionsResolver->setDefaults([
+        $resolver->setDefaults([
             'min_prefix_length'      => 3,
             'result_limit'           => 1000,
             'phrased_search'         => false,
@@ -66,48 +45,33 @@ class SearchOutputChannel implements OutputChannelInterface
             'restrict_search_fields' => []
         ]);
 
-        $optionsResolver->setAllowedTypes('min_prefix_length', ['int']);
-        $optionsResolver->setAllowedTypes('phrased_search', ['bool']);
-        $optionsResolver->setAllowedTypes('fuzzy_search', ['bool']);
-        $optionsResolver->setAllowedTypes('wildcard_search', ['bool']);
+        $resolver->setAllowedTypes('min_prefix_length', ['int']);
+        $resolver->setAllowedTypes('phrased_search', ['bool']);
+        $resolver->setAllowedTypes('fuzzy_search', ['bool']);
+        $resolver->setAllowedTypes('wildcard_search', ['bool']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext): void
     {
         $this->outputChannelContext = $outputChannelContext;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getQuery()
+    public function getQuery(): mixed
     {
         $queryTerm = $this->outputChannelContext->getRuntimeQueryProvider()->getUserQuery();
 
@@ -153,9 +117,6 @@ class SearchOutputChannel implements OutputChannelInterface
         return $eventData->getParameter('query');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getResult(SearchContainerInterface $searchContainer): SearchContainerInterface
     {
         $query = $searchContainer->getQuery();

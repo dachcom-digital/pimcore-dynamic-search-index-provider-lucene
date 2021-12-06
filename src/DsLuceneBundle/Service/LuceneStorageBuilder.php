@@ -16,19 +16,9 @@ use ZendSearch\Lucene\SearchIndexInterface;
 
 class LuceneStorageBuilder
 {
-    /**
-     * @var Filesystem
-     */
-    protected $filesystem;
+    protected Filesystem $filesystem;
+    protected AnalyzerFactory $analyzerFactory;
 
-    /**
-     * @var AnalyzerFactory
-     */
-    protected $analyzerFactory;
-
-    /**
-     * @param AnalyzerFactory $analyzerFactory
-     */
     public function __construct(AnalyzerFactory $analyzerFactory)
     {
         $this->filesystem = new Filesystem();
@@ -36,14 +26,9 @@ class LuceneStorageBuilder
     }
 
     /**
-     * @param array $providerOptions
-     * @param bool  $killExistingInstance
-     *
-     * @return SearchIndexInterface
-     *
      * @throws LuceneException
      */
-    public function createGenesisIndex(array $providerOptions, $killExistingInstance = false)
+    public function createGenesisIndex(array $providerOptions, bool $killExistingInstance = false): SearchIndexInterface
     {
         $databaseName = $providerOptions['database_name'];
 
@@ -73,12 +58,9 @@ class LuceneStorageBuilder
     }
 
     /**
-     * @param array $providerOptions
-     *
      * @throws ProviderException
-     * @throws LuceneException
      */
-    public function riseGenesisIndexToStable(array $providerOptions)
+    public function riseGenesisIndexToStable(array $providerOptions): void
     {
         $databaseName = $providerOptions['database_name'];
 
@@ -103,16 +85,9 @@ class LuceneStorageBuilder
     }
 
     /**
-     * @param array       $providerOptions
-     * @param string      $state
-     * @param string|null $locale
-     * @param bool        $isIndexMode
-     *
-     * @return SearchIndexInterface
-     *
      * @throws LuceneException
      */
-    public function getLuceneIndex(array $providerOptions, string $state = ConfigurationInterface::INDEX_BASE_GENESIS, ?string $locale = null, $isIndexMode = false)
+    public function getLuceneIndex(array $providerOptions, string $state = ConfigurationInterface::INDEX_BASE_GENESIS, ?string $locale = null, bool $isIndexMode = false): SearchIndexInterface
     {
         QueryParser::setDefaultEncoding('utf-8');
 
@@ -129,11 +104,7 @@ class LuceneStorageBuilder
         return Lucene::open($indexDir);
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     */
-    public function dropLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    public function dropLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): void
     {
         $indexDir = $this->buildIndexPath($databaseName, $state);
 
@@ -144,11 +115,7 @@ class LuceneStorageBuilder
         $this->filesystem->remove($indexDir);
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     */
-    public function optimizeLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    public function optimizeLuceneIndex(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): void
     {
         if (!$this->indexExists($databaseName, $state)) {
             return;
@@ -164,13 +131,7 @@ class LuceneStorageBuilder
         $index->optimize();
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     *
-     * @return bool
-     */
-    public function indexExists(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    public function indexExists(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): bool
     {
         $indexDir = $this->createIndexDir($databaseName, $state);
 
@@ -185,13 +146,7 @@ class LuceneStorageBuilder
         return false;
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     *
-     * @return string
-     */
-    protected function createIndexDir(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    protected function createIndexDir(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): string
     {
         $path = $this->buildIndexPath($databaseName, $state);
 
@@ -204,13 +159,7 @@ class LuceneStorageBuilder
         return $path;
     }
 
-    /**
-     * @param string $databaseName
-     * @param string $state
-     *
-     * @return string
-     */
-    protected function buildIndexPath(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS)
+    protected function buildIndexPath(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): string
     {
         return sprintf('%s/%s', $state, $databaseName);
     }

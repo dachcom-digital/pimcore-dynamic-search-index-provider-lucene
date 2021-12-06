@@ -6,10 +6,7 @@ use ZendSearch\Lucene;
 
 final class TextField extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function build(string $name, $data, array $configuration = [])
+    public function build(string $name, mixed $data, array $configuration = []): Lucene\Document\Field
     {
         $field = Lucene\Document\Field::text($name, $data, self::UTF8);
 

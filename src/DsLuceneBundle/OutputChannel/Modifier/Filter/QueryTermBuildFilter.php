@@ -8,23 +8,14 @@ use DynamicSearchBundle\OutputChannel\Modifier\OutputChannelModifierFilterInterf
 
 class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
 {
-    /**
-     * @var TermModifier
-     */
-    protected $termModifier;
+    protected TermModifier $termModifier;
 
-    /**
-     * @param TermModifier $termModifier
-     */
     public function __construct(TermModifier $termModifier)
     {
         $this->termModifier = $termModifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatchFilter(OutputChannelAllocatorInterface $outputChannelAllocator, array $options)
+    public function dispatchFilter(OutputChannelAllocatorInterface $outputChannelAllocator, array $options): mixed
     {
         $cleanTerm = $options['clean_term'];
 
@@ -66,34 +57,20 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             $query[] = $this->addSimpleQuery($cleanTerm, $outputChannelOptions);
         }
 
-        $query = join(' OR ', array_filter($query, function ($value) {
+        return implode(' OR ', array_filter($query, static function ($value) {
             return !is_null($value);
         }));
-
-        return $query;
     }
 
-    /**
-     * @param string $cleanTerm
-     * @param array  $options
-     *
-     * @return string
-     */
-    protected function addPhraseQuery($cleanTerm, array $options)
+    protected function addPhraseQuery(string $cleanTerm, array $options): string
     {
         $exactTerm = sprintf('"%s"', $cleanTerm);
         $fieldTerms = $this->getFieldTerm($options['restrict_search_fields'], $exactTerm);
 
-        return sprintf('(%s)', join(' OR ', $fieldTerms));
+        return sprintf('(%s)', implode(' OR ', $fieldTerms));
     }
 
-    /**
-     * @param string $cleanTerm
-     * @param array  $options
-     *
-     * @return string|null
-     */
-    protected function addFuzzyQuery($cleanTerm, array $options)
+    protected function addFuzzyQuery(string $cleanTerm, array $options): ?string
     {
         // do not allow min prefix length <= 4 in fuzzy search: performance hell!
         $minPrefixLength = max(4, $options['min_prefix_length']);
@@ -107,23 +84,17 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             foreach ($fieldTerms as $fieldTerm) {
                 $subTerms[] = sprintf('%s~', $fieldTerm);
             }
-            $terms[] = join(' OR ', $subTerms);
+            $terms[] = implode(' OR ', $subTerms);
         }
 
         if (count($terms) === 0) {
             return null;
         }
 
-        return sprintf('(%s)', join(' OR ', $terms));
+        return sprintf('(%s)', implode(' OR ', $terms));
     }
 
-    /**
-     * @param string $cleanTerm
-     * @param array  $options
-     *
-     * @return string|null
-     */
-    protected function addWildcardQuery($cleanTerm, array $options)
+    protected function addWildcardQuery(string $cleanTerm, array $options): ?string
     {
         // do not allow min prefix length <= 4 in wildcard search: performance hell!
         $minPrefixLength = max(4, $options['min_prefix_length']);
@@ -137,23 +108,17 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             foreach ($fieldTerms as $fieldTerm) {
                 $subTerms[] = sprintf('%s*', $fieldTerm);
             }
-            $terms[] = join(' OR ', $subTerms);
+            $terms[] = implode(' OR ', $subTerms);
         }
 
         if (count($terms) === 0) {
             return null;
         }
 
-        return sprintf('(%s)', join(' OR ', $terms));
+        return sprintf('(%s)', implode(' OR ', $terms));
     }
 
-    /**
-     * @param string $cleanTerm
-     * @param array  $options
-     *
-     * @return string|null
-     */
-    protected function addSimpleQuery($cleanTerm, array $options)
+    protected function addSimpleQuery(string $cleanTerm, array $options): ?string
     {
         $cleanSplitTerms = $this->termModifier->removeSpecialOperators($cleanTerm);
         $splitTerms = $this->termModifier->splitTerm($cleanSplitTerms, $options['min_prefix_length'], 10);
@@ -161,7 +126,7 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
         $terms = [];
 
         if (count($options['restrict_search_fields']) === 0) {
-            return sprintf('(%s)', join(' ', $splitTerms));
+            return sprintf('(%s)', implode(' ', $splitTerms));
         }
 
         foreach ($splitTerms as $i => $queryTerm) {
@@ -170,23 +135,17 @@ class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
             foreach ($fieldTerms as $fieldTerm) {
                 $subTerms[] = $fieldTerm;
             }
-            $terms[] = join(' OR ', $subTerms);
+            $terms[] = implode(' OR ', $subTerms);
         }
 
         if (count($terms) === 0) {
             return null;
         }
 
-        return sprintf('(%s)', join(' OR ', $terms));
+        return sprintf('(%s)', implode(' OR ', $terms));
     }
 
-    /**
-     * @param array  $restrictedSearchFields
-     * @param string $term
-     *
-     * @return array
-     */
-    protected function getFieldTerm(array $restrictedSearchFields, $term)
+    protected function getFieldTerm(array $restrictedSearchFields, string $term): array
     {
         if (count($restrictedSearchFields) === 0) {
             return [$term];
