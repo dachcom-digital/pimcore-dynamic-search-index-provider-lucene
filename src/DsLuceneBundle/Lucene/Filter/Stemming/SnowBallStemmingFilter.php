@@ -67,7 +67,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
     {
         $stemWordFunction = 'stemword';
         if (function_exists($stemWordFunction)) {
-            return $stemWordFunction($word, $this->locale, 'UTF_8');
+            return call_user_func($stemWordFunction, $word, $this->locale, 'UTF_8');
         }
 
         return null;

@@ -27,12 +27,18 @@ class AsciiFoldingFilter implements TokenFilterInterface
         return $newToken;
     }
 
-    protected function process(string $word): string
+    protected function process(string $word): ?string
     {
         if (!function_exists('transliterator_transliterate')) {
             return $word;
         }
 
-        return transliterator_transliterate('Any-Latin; Latin-ASCII; [\u0080-\u7fff] remove', $word);
+        $trans = transliterator_transliterate('Any-Latin; Latin-ASCII; [\u0080-\u7fff] remove', $word);
+
+        if ($trans === false) {
+            return null;
+        }
+
+        return $trans;
     }
 }
