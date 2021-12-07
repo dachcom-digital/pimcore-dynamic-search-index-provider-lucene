@@ -27,12 +27,7 @@ class AsciiFoldingFilter implements TokenFilterInterface
         return $newToken;
     }
 
-    /**
-     * @param string $word
-     *
-     * @return string
-     */
-    protected function process($word)
+    protected function process(string $word): string
     {
         if (!function_exists('transliterator_transliterate')) {
             return $word;

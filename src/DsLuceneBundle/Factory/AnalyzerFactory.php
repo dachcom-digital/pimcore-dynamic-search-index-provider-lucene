@@ -7,6 +7,7 @@ use DsLuceneBundle\Event\AnalzyerEvent;
 use DsLuceneBundle\Lucene\Analyzer\CaseInsensitive;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
 use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
@@ -20,7 +21,7 @@ class AnalyzerFactory
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function build(array $analyzerOptions, ?string $locale = null, bool $isIndexMode = false): CaseInsensitive
+    public function build(array $analyzerOptions, ?string $locale = null, bool $isIndexMode = false): AnalyzerInterface
     {
         $builtLocale = null;
 
@@ -89,8 +90,8 @@ class AnalyzerFactory
         }
 
         foreach ($stopWordsLibraries as $library) {
-            $locale = isset($library['locale']) ? $library['locale'] : null;
-            $file = isset($library['file']) ? $library['file'] : null;
+            $locale = $library['locale'] ?? null;
+            $file = $library['file'] ?? null;
 
             if (empty($locale) || $locale !== $currentLocale) {
                 continue;

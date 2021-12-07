@@ -8,15 +8,11 @@ use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
 
 class SnowBallStemmingFilter implements TokenFilterInterface
 {
-    /**
-     * @var int
-     */
-    const MIN_TOKEN_LENGTH = 1;
+    public const MIN_TOKEN_LENGTH = 1;
 
-    /**
-     * @var array
-     */
-    protected $mapping = [
+    protected string $locale;
+    protected array $cache = [];
+    protected array $mapping = [
         'da' => 'Danish',
         'nl' => 'Dutch',
         'en' => 'English',
@@ -31,20 +27,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         'sv' => 'Swedish'
     ];
 
-    /**
-     * @var string
-     */
-    protected $locale;
-
-    /**
-     * @var array
-     */
-    protected $cache = [];
-
-    /**
-     * @param string $locale
-     */
-    public function setLocale(string $locale)
+    public function setLocale(string $locale): void
     {
         $this->locale = $locale;
     }
@@ -69,14 +52,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         return $newToken;
     }
 
-    /**
-     * @param string $word
-     *
-     * @return string|null
-     *
-     * @throws \Exception
-     */
-    protected function stem($word)
+    protected function stem(string $word): ?string
     {
         if (extension_loaded('stemmer')) {
             $stemmedWord = $this->stemByExtension($word);
@@ -87,30 +63,17 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         return $stemmedWord;
     }
 
-    /**
-     * @param string $word
-     *
-     * @return string|null
-     */
-    protected function stemByExtension($word)
+    protected function stemByExtension(string $word): ?string
     {
-        // phpstan does not allow dynamic function check via function_exists
-        $stemwordFunction = 'stemword';
-        if (is_callable($stemwordFunction)) {
-            return $stemwordFunction($word, $this->locale, 'UTF_8');
+        $stemWordFunction = 'stemword';
+        if (function_exists($stemWordFunction)) {
+            return $stemWordFunction($word, $this->locale, 'UTF_8');
         }
 
         return null;
     }
 
-    /**
-     * @param string $sourceStr
-     *
-     * @return string|null
-     *
-     * @throws \Exception
-     */
-    protected function stemByPhpSnowball($sourceStr)
+    protected function stemByPhpSnowball(string $sourceStr): ?string
     {
         if (strlen($sourceStr) < self::MIN_TOKEN_LENGTH) {
             return null;
@@ -130,15 +93,10 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         return $stem;
     }
 
-    /**
-     * @return string|null
-     *
-     * @throws \Exception
-     */
-    protected function getStemmingClass()
+    protected function getStemmingClass(): ?Stemmer
     {
         $locale = $this->locale;
-        if (strpos($this->locale, '_') !== false) {
+        if (str_contains($this->locale, '_')) {
             $localeFragments = explode('_', $this->locale);
             $locale = $localeFragments[0];
         }

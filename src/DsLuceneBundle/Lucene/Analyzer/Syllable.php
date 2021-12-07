@@ -6,15 +6,8 @@ use Org\Heigl\Hyphenator;
 
 class Syllable extends CaseInsensitive
 {
-    /**
-     * @var Hyphenator\Options
-     */
-    protected $options;
-
-    /**
-     * @var Hyphenator\Hyphenator
-     */
-    protected $hypenator;
+    protected ?Hyphenator\Options $options = null;
+    protected ?Hyphenator\Hyphenator $hypenator = null;
 
     /**
      * @param string $data
@@ -74,18 +67,12 @@ class Syllable extends CaseInsensitive
         $this->reset();
     }
 
-    /**
-     * @param Hyphenator\Options $options
-     */
-    public function setHyphenatorOptions(Hyphenator\Options $options)
+    public function setHyphenatorOptions(Hyphenator\Options $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * @return Hyphenator\Hyphenator
-     */
-    public function getHyphenator()
+    public function getHyphenator(): Hyphenator\Hyphenator
     {
         if ($this->hypenator instanceof Hyphenator\Hyphenator) {
             return $this->hypenator;
@@ -96,10 +83,7 @@ class Syllable extends CaseInsensitive
         return $this->hypenator;
     }
 
-    /**
-     * @return Hyphenator\Options
-     */
-    public function getHyphenatorOptions()
+    public function getHyphenatorOptions(): Hyphenator\Options
     {
         if ($this->options instanceof Hyphenator\Options) {
             return $this->options;
