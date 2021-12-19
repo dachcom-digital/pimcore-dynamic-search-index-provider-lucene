@@ -16,47 +16,26 @@ use ZendSearch\Exception\ExceptionInterface;
 
 class AutoCompleteOutputChannel implements OutputChannelInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
+    protected LuceneStorageBuilder $storageBuilder;
+    protected OutputChannelContextInterface $outputChannelContext;
+    protected OutputChannelModifierEventDispatcher $eventDispatcher;
 
-    /**
-     * @var OutputChannelContextInterface
-     */
-    protected $outputChannelContext;
-
-    /**
-     * @var LuceneStorageBuilder
-     */
-    protected $storageBuilder;
-
-    /**
-     * @var OutputChannelModifierEventDispatcher
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @param LuceneStorageBuilder $storageBuilder
-     */
     public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function configureOptions(OptionsResolver $optionsResolver)
+    public static function configureOptions(OptionsResolver $resolver): void
     {
-        $optionsResolver->setRequired([
+        $resolver->setRequired([
             'min_prefix_length',
             'use_fuzzy_term_search_fallback',
             'fuzzy_default_prefix_length',
             'fuzzy_similarity',
         ]);
 
-        $optionsResolver->setDefaults([
+        $resolver->setDefaults([
             'min_prefix_length'              => 3,
             'use_fuzzy_term_search_fallback' => true,
             'fuzzy_default_prefix_length'    => 0,
@@ -64,42 +43,27 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext): void
     {
         $this->outputChannelContext = $outputChannelContext;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getQuery()
+    public function getQuery(): mixed
     {
         $queryTerm = $this->outputChannelContext->getRuntimeQueryProvider()->getUserQuery();
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
@@ -133,9 +97,6 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         return $eventData->getParameter('terms');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getResult(SearchContainerInterface $searchContainer): SearchContainerInterface
     {
         $query = $searchContainer->getQuery();
@@ -171,7 +132,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         foreach ($terms as $term) {
             $fieldText = $term->text;
 
-            if (in_array($fieldText, $suggestions)) {
+            if (in_array($fieldText, $suggestions, true)) {
                 continue;
             }
 
@@ -206,13 +167,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         return $searchContainer;
     }
 
-    /**
-     * @param string                      $queryStr
-     * @param Lucene\SearchIndexInterface $index
-     *
-     * @return array
-     */
-    protected function getWildcardTerms($queryStr, Lucene\SearchIndexInterface $index)
+    protected function getWildcardTerms(string $queryStr, Lucene\SearchIndexInterface $index): array
     {
         $pattern = new Lucene\Index\Term($queryStr . '*');
         $userQuery = new Query\Wildcard($pattern);
@@ -226,15 +181,7 @@ class AutoCompleteOutputChannel implements OutputChannelInterface
         return $terms;
     }
 
-    /**
-     * @param string                      $queryStr
-     * @param Lucene\SearchIndexInterface $index
-     * @param int                         $prefixLength optionally specify prefix length, default 0
-     * @param float                       $similarity   optionally specify similarity, default 0.5
-     *
-     * @return string[] $similarSearchTerms
-     */
-    public function getFuzzyTerms($queryStr, Lucene\SearchIndexInterface $index, $prefixLength = 0, $similarity = 0.5)
+    public function getFuzzyTerms(string $queryStr, Lucene\SearchIndexInterface $index, int $prefixLength = 0, float $similarity = 0.5): array
     {
         Query\Fuzzy::setDefaultPrefixLength($prefixLength);
         $term = new Lucene\Index\Term($queryStr);

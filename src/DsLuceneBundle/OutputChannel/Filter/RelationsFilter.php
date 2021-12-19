@@ -3,7 +3,6 @@
 namespace DsLuceneBundle\OutputChannel\Filter;
 
 use DsLuceneBundle\Configuration\ConfigurationInterface;
-use DsLuceneBundle\Exception\LuceneException;
 use DsLuceneBundle\Service\LuceneStorageBuilder;
 use DynamicSearchBundle\EventDispatcher\OutputChannelModifierEventDispatcher;
 use DynamicSearchBundle\Filter\FilterInterface;
@@ -16,45 +15,20 @@ use ZendSearch\Lucene\Search\QueryParser;
 
 class RelationsFilter implements FilterInterface
 {
-    const VIEW_TEMPLATE_PATH = '@DsLucene/OutputChannel/Filter';
+    public const VIEW_TEMPLATE_PATH = '@DsLucene/OutputChannel/Filter';
 
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
+    protected string $name;
+    protected LuceneStorageBuilder $storageBuilder;
+    protected OutputChannelContextInterface $outputChannelContext;
+    protected OutputChannelModifierEventDispatcher $eventDispatcher;
 
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var LuceneStorageBuilder
-     */
-    protected $storageBuilder;
-
-    /**
-     * @var OutputChannelContextInterface
-     */
-    protected $outputChannelContext;
-
-    /**
-     * @var OutputChannelModifierEventDispatcher
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @param LuceneStorageBuilder $storageBuilder
-     */
     public function __construct(LuceneStorageBuilder $storageBuilder)
     {
         $this->storageBuilder = $storageBuilder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['identifier', 'value', 'label', 'show_in_frontend', 'relation_label', 'query_behaviour']);
         $resolver->setAllowedTypes('show_in_frontend', ['bool']);
@@ -71,50 +45,32 @@ class RelationsFilter implements FilterInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setName(string $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher)
+    public function setEventDispatcher(OutputChannelModifierEventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext)
+    public function setOutputChannelContext(OutputChannelContextInterface $outputChannelContext): void
     {
         $this->outputChannelContext = $outputChannelContext;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsFrontendView(): bool
     {
         return $this->options['show_in_frontend'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function enrichQuery($query)
+    public function enrichQuery(mixed $query): mixed
     {
         if (!$query instanceof Query\Boolean) {
             return $query;
@@ -122,7 +78,7 @@ class RelationsFilter implements FilterInterface
 
         $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
         foreach ($runtimeOptions['request_query_vars'] as $key => $value) {
-            if (substr($key, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
+            if (!str_starts_with($key, $this->options['identifier'])) {
                 continue;
             }
 
@@ -134,19 +90,13 @@ class RelationsFilter implements FilterInterface
         return $query;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function findFilterValueInResult(RawResultInterface $rawResult)
+    public function findFilterValueInResult(RawResultInterface $rawResult): mixed
     {
         // not supported for lucene
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function buildViewVars(RawResultInterface $rawResult, $filterValues, $query)
+    public function buildViewVars(RawResultInterface $rawResult, $filterValues, mixed $query): ?array
     {
         $result = $rawResult->getData();
 
@@ -166,7 +116,7 @@ class RelationsFilter implements FilterInterface
 
         $filterNames = [];
         foreach ($index->getFieldNames() as $fieldName) {
-            if (substr($fieldName, 0, strlen($this->options['identifier'])) !== $this->options['identifier']) {
+            if (!str_starts_with($fieldName, $this->options['identifier'])) {
                 continue;
             }
 
@@ -189,13 +139,7 @@ class RelationsFilter implements FilterInterface
         return $viewVars;
     }
 
-    /**
-     * @param array $result
-     * @param array $filterNames
-     *
-     * @return array
-     */
-    protected function filterInMainQuery($result, $filterNames)
+    protected function filterInMainQuery(array $result, array $filterNames): array
     {
         if (!is_array($result)) {
             return [];
@@ -204,15 +148,7 @@ class RelationsFilter implements FilterInterface
         return $this->buildResultArray($result, $filterNames);
     }
 
-    /**
-     * @param Query\Boolean $mainQuery
-     * @param array         $filterNames
-     *
-     * @return array
-     *
-     * @throws LuceneException
-     */
-    protected function filterInSubQuery($mainQuery, $filterNames)
+    protected function filterInSubQuery(mixed $mainQuery, array $filterNames): array
     {
         if (!$mainQuery instanceof Query\Boolean) {
             return [];
@@ -242,13 +178,7 @@ class RelationsFilter implements FilterInterface
         return $this->buildResultArray($filterHits, $filterNames);
     }
 
-    /**
-     * @param array $result
-     * @param array $filterNames
-     *
-     * @return array
-     */
-    protected function buildResultArray(array $result, array $filterNames)
+    protected function buildResultArray(array $result, array $filterNames): array
     {
         $runtimeOptions = $this->outputChannelContext->getRuntimeOptions();
         $queryFields = $runtimeOptions['request_query_vars'];
@@ -264,8 +194,8 @@ class RelationsFilter implements FilterInterface
             $fields = $document->getFieldNames();
 
             $allowedFields = array_values(
-                array_filter($fields, function ($field) use ($filterNames, $document, $value) {
-                    if (!in_array($field, $filterNames)) {
+                array_filter($fields, static function ($field) use ($filterNames, $document, $value) {
+                    if (!in_array($field, $filterNames, true)) {
                         return false;
                     }
 

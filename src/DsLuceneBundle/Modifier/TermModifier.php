@@ -10,15 +10,9 @@ class TermModifier
     /**
      * Default Behaviour:
      * Input: "my awesome search query"
-     * Output: ["awesome", "search", "query"].
-     *
-     * @param string $query
-     * @param int    $minPrefixLength
-     * @param int    $maxTerms
-     *
-     * @return array
+     * Output: ["awesome", "search", "query"]
      */
-    public function splitTerm(string $query, int $minPrefixLength = 3, $maxTerms = 0)
+    public function splitTerm(string $query, int $minPrefixLength = 3, int $maxTerms = 0): array
     {
         $terms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
             return strlen($t) >= $minPrefixLength;
@@ -48,22 +42,12 @@ class TermModifier
         return $maxTerms === 0 ? $cleanTerms : array_slice($cleanTerms, 0, $maxTerms);
     }
 
-    /**
-     * @param string $query
-     *
-     * @return bool
-     */
-    public function isPhrasedQuery(string $query)
+    public function isPhrasedQuery(string $query): bool
     {
         return preg_match('#^(\'|").+\1$#', $query) === 1;
     }
 
-    /**
-     * @param string $str
-     *
-     * @return string
-     */
-    public function escapeSpecialChars($str)
+    public function escapeSpecialChars(string $str): string
     {
         $specialChars = ['\\', '+', '-', '&&', '||', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':'];
 
@@ -74,24 +58,17 @@ class TermModifier
         return $str;
     }
 
-    /**
-     * @param string $str
-     *
-     * @return mixed
-     */
-    public function removeSpecialOperators($str)
+    public function removeSpecialOperators(string $str): string
     {
         $queryOperators = ['to', 'or', 'and', 'not'];
 
         $queryOperators = array_map(
-            function ($operator) {
+            static function ($operator) {
                 return " {$operator} ";
             },
             $queryOperators
         );
 
-        $str = str_ireplace($queryOperators, ' ', $str);
-
-        return $str;
+        return str_ireplace($queryOperators, ' ', $str);
     }
 }

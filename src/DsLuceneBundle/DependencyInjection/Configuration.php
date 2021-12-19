@@ -7,11 +7,22 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('ds_lucene');
+        $treeBuilder = new TreeBuilder('ds_lucene');
 
-        return $treeBuilder;
+        $rootNode = $treeBuilder->getRootNode();
+        $rootNode
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('index')
+                    ->addDefaultsIfNotSet()
+                        ->children()
+                        ->booleanNode('base_path')->defaultValue('%kernel.project_dir%/var/bundles/DsLuceneBundle/index')->end()
+                    ->end()
+                ->end()
+            ->end();
+
+         return $treeBuilder;
     }
 }

@@ -7,33 +7,21 @@ use DsLuceneBundle\Event\AnalzyerEvent;
 use DsLuceneBundle\Lucene\Analyzer\CaseInsensitive;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 use ZendSearch\Lucene\Analysis\Analyzer\Common\AbstractCommon;
 use ZendSearch\Lucene\Analysis\TokenFilter\StopWords;
 use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
 
 class AnalyzerFactory
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
+    protected EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @param EventDispatcherInterface $eventDispatcher
-     */
     public function __construct(EventDispatcherInterface $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * @param array       $analyzerOptions
-     * @param string|null $locale
-     * @param bool        $isIndexMode
-     *
-     * @return CaseInsensitive
-     */
-    public function build(array $analyzerOptions, ?string $locale = null, $isIndexMode = false)
+    public function build(array $analyzerOptions, ?string $locale = null, bool $isIndexMode = false): AnalyzerInterface
     {
         $builtLocale = null;
 
@@ -61,13 +49,7 @@ class AnalyzerFactory
         return $analyzer;
     }
 
-    /**
-     * @param AbstractCommon $analyzer
-     * @param array          $filterData
-     * @param bool           $isIndexMode
-     * @param string|null    $currentLocale
-     */
-    public function addAnalyzerFilter(AbstractCommon $analyzer, array $filterData, bool $isIndexMode, ?string $currentLocale)
+    public function addAnalyzerFilter(AbstractCommon $analyzer, array $filterData, bool $isIndexMode, ?string $currentLocale): void
     {
         foreach ($filterData as $filterName => $filterOptions) {
             $filter = null;
@@ -88,13 +70,7 @@ class AnalyzerFactory
         }
     }
 
-    /**
-     * @param string|null $currentLocale
-     * @param array       $filterOptions
-     *
-     * @return TokenFilterInterface|null
-     */
-    public function buildStopWordsFilter(?string $currentLocale, array $filterOptions)
+    public function buildStopWordsFilter(?string $currentLocale, array $filterOptions): ?TokenFilterInterface
     {
         $stopWordsFilter = null;
 
@@ -114,8 +90,8 @@ class AnalyzerFactory
         }
 
         foreach ($stopWordsLibraries as $library) {
-            $locale = isset($library['locale']) ? $library['locale'] : null;
-            $file = isset($library['file']) ? $library['file'] : null;
+            $locale = $library['locale'] ?? null;
+            $file = $library['file'] ?? null;
 
             if (empty($locale) || $locale !== $currentLocale) {
                 continue;
@@ -128,18 +104,10 @@ class AnalyzerFactory
         return $stopWordsFilter;
     }
 
-    /**
-     * @param string|null $currentLocale
-     * @param array       $filterOptions
-     *
-     * @return TokenFilterInterface|null
-     */
-    public function buildDefaultFilter(?string $currentLocale, array $filterOptions)
+    public function buildDefaultFilter(?string $currentLocale, array $filterOptions): ?TokenFilterInterface
     {
-        $filter = null;
-
-        $isLocaleAware = isset($filterOptions['locale_aware']) && is_bool($filterOptions['locale_aware']) ? $filterOptions['locale_aware'] : false;
-        $filterClass = isset($filterOptions['class']) ? $filterOptions['class'] : SnowBallStemmingFilter::class;
+        $isLocaleAware = isset($filterOptions['locale_aware']) && is_bool($filterOptions['locale_aware']) && $filterOptions['locale_aware'];
+        $filterClass = $filterOptions['class'] ?? SnowBallStemmingFilter::class;
 
         if ($filterClass === null) {
             return null;
@@ -157,12 +125,7 @@ class AnalyzerFactory
         return $filter;
     }
 
-    /**
-     * @param string $path
-     *
-     * @return mixed
-     */
-    protected function parseFilePath($path)
+    protected function parseFilePath(string $path): string
     {
         return str_replace(
             ['%dsl_stop_words_lib_path%'],
@@ -171,20 +134,16 @@ class AnalyzerFactory
         );
     }
 
-    /**
-     * @param array $filterOptions
-     * @param bool  $isIndexMode
-     *
-     * @return bool
-     */
-    protected function filterIsActive(array $filterOptions, bool $isIndexMode)
+    protected function filterIsActive(array $filterOptions, bool $isIndexMode): bool
     {
         $onIndexTime = isset($filterOptions['on_index_time']) && is_bool($filterOptions['on_index_time']) ? $filterOptions['on_index_time'] : true;
         $onQueryTime = isset($filterOptions['on_query_time']) && is_bool($filterOptions['on_query_time']) ? $filterOptions['on_query_time'] : true;
 
         if ($isIndexMode === true && $onIndexTime === false) {
             return false;
-        } elseif ($isIndexMode === false && $onQueryTime === false) {
+        }
+
+        if ($isIndexMode === false && $onQueryTime === false) {
             return false;
         }
 

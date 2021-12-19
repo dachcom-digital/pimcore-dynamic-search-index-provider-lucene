@@ -10,33 +10,21 @@ use ZendSearch\Exception\ExceptionInterface;
 
 class LuceneHandler implements LuceneHandlerInterface
 {
-    /**
-     * @var SearchIndexInterface
-     */
-    protected $index;
+    protected SearchIndexInterface $index;
 
-    /**
-     * @param SearchIndexInterface $index
-     */
     public function __construct(SearchIndexInterface $index)
     {
         $this->index = $index;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function findTermDocuments($documentId)
+    public function findTermDocuments(int|string $documentId): array
     {
         $idTerm = new Term($documentId, 'id');
 
         return $this->index->termDocs($idTerm);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteDocuments(array $documentIds)
+    public function deleteDocuments(array $documentIds): void
     {
         foreach ($documentIds as $documentId) {
             try {
@@ -57,10 +45,7 @@ class LuceneHandler implements LuceneHandlerInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true)
+    public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true): Document
     {
         $doc = new Document();
         $doc->addField(Document\Field::keyword('id', $indexDocument->getDocumentId(), 'UTF-8'));
@@ -90,10 +75,7 @@ class LuceneHandler implements LuceneHandlerInterface
         return $doc;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addDocumentToIndex(Document $document, bool $commit = true)
+    public function addDocumentToIndex(Document $document, bool $commit = true): void
     {
         $this->index->addDocument($document);
 

@@ -7,30 +7,11 @@ use ZendSearch\Lucene\Document;
 
 interface LuceneHandlerInterface
 {
-    /**
-     * @param string $documentId
-     *
-     * @return array
-     */
-    public function findTermDocuments($documentId);
+    public function findTermDocuments(int|string $documentId): array;
 
-    /**
-     * @param array $documentIds
-     */
-    public function deleteDocuments(array $documentIds);
+    public function deleteDocuments(array $documentIds): void;
 
-    /**
-     * @param IndexDocument $indexDocument
-     * @param bool          $addToIndex
-     * @param bool          $commit
-     *
-     * @return Document
-     */
-    public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, $commit = true);
+    public function createLuceneDocument(IndexDocument $indexDocument, bool $addToIndex, bool $commit = true): Document;
 
-    /**
-     * @param Document $document
-     * @param bool     $commit
-     */
-    public function addDocumentToIndex(Document $document, bool $commit = true);
+    public function addDocumentToIndex(Document $document, bool $commit = true): void;
 }

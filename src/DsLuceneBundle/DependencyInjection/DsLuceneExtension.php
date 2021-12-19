@@ -9,21 +9,14 @@ use Symfony\Component\Config\FileLocator;
 
 class DsLuceneExtension extends Extension
 {
-    /**
-     * @param array            $configs
-     * @param ContainerBuilder $container
-     *
-     * @throws \Exception
-     */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter('dynamic_search.ds_lucene.index.base_path', $config['index']['base_path']);
+
         $loader = new YamlFileLoader($container, new FileLocator([__DIR__ . '/../Resources/config']));
         $loader->load('services.yml');
-
-        //$configManagerDefinition = $container->getDefinition(BundleConfiguration::class);
-        //$configManagerDefinition->addMethodCall('setConfig', [$config]);
     }
 }

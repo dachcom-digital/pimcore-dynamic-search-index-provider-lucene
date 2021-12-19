@@ -8,12 +8,7 @@ use ZendSearch\Exception\ExceptionInterface;
 
 class LuceneDocumentDataExtractor
 {
-    /**
-     * @param QueryHit $hit
-     *
-     * @return array
-     */
-    public function extract(QueryHit $hit)
+    public function extract(QueryHit $hit): array
     {
         $document = $hit->getDocument();
 
