@@ -87,8 +87,12 @@ class LuceneStorageBuilder
     /**
      * @throws LuceneException
      */
-    public function getLuceneIndex(array $providerOptions, string $state = ConfigurationInterface::INDEX_BASE_GENESIS, ?string $locale = null, bool $isIndexMode = false): SearchIndexInterface
-    {
+    public function getLuceneIndex(
+        array $providerOptions,
+        string $state = ConfigurationInterface::INDEX_BASE_GENESIS,
+        ?string $locale = null,
+        bool $isIndexMode = false
+    ): SearchIndexInterface {
         QueryParser::setDefaultEncoding('utf-8');
 
         try {
@@ -161,6 +165,6 @@ class LuceneStorageBuilder
 
     protected function buildIndexPath(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): string
     {
-        return sprintf('%s/%s/%s',$this->basePath, $state, $databaseName);
+        return sprintf('%s/%s/%s', $this->basePath, $state, $databaseName);
     }
 }
