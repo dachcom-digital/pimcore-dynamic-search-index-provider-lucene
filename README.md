@@ -170,3 +170,12 @@ A Output Normalizer can be defined for each output channel.
     - [Custom Analyzer](./docs/0_Custom_Analyzer.md) (Example: Syllable Analyzer)
     - [Lucene Token Filter](./docs/1_CustomTokenFilter.md) (Stemming Filter, Stop Words Filter)    
     - [Debugging](./docs/2_Debugging.md) (Debugging Lucene Index Database)
+
+***
+
+## Copyright and License
+Copyright: [DACHCOM.DIGITAL](http://dachcom-digital.com)  
+For licensing details please visit [LICENSE.md](./LICENSE.md)
+
+## Upgrade Info
+Before updating, please [check our upgrade notes!](./UPGRADE.md)  
