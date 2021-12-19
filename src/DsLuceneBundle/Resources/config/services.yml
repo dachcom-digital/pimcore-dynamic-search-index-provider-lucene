@@ -8,4 +8,6 @@ services:
         autoconfigure: true
         public: false
 
-    DsLuceneBundle\Service\LuceneStorageBuilder: ~
+    DsLuceneBundle\Service\LuceneStorageBuilder:
+        arguments:
+            $basePath: '%dynamic_search.ds_lucene.index.base_path%'

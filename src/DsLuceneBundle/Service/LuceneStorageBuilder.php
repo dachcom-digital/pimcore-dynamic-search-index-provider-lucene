@@ -16,11 +16,13 @@ use ZendSearch\Lucene\SearchIndexInterface;
 
 class LuceneStorageBuilder
 {
+    protected string $basePath;
     protected Filesystem $filesystem;
     protected AnalyzerFactory $analyzerFactory;
 
-    public function __construct(AnalyzerFactory $analyzerFactory)
+    public function __construct(string $basePath, AnalyzerFactory $analyzerFactory)
     {
+        $this->basePath = $basePath;
         $this->filesystem = new Filesystem();
         $this->analyzerFactory = $analyzerFactory;
     }
@@ -41,8 +43,6 @@ class LuceneStorageBuilder
         }
 
         $indexDir = $this->createIndexDir($databaseName);
-
-        $index = null;
 
         try {
             $index = Lucene::create($indexDir);
@@ -161,6 +161,6 @@ class LuceneStorageBuilder
 
     protected function buildIndexPath(string $databaseName, string $state = ConfigurationInterface::INDEX_BASE_GENESIS): string
     {
-        return sprintf('%s/%s', $state, $databaseName);
+        return sprintf('%s/%s/%s',$this->basePath, $state, $databaseName);
     }
 }
