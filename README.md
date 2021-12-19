@@ -24,6 +24,9 @@ Store data with the PHP Lucene index service.
 }
 ```
 
+### Dependencies
+This package will also install a fork of [ZendSearch](https://github.com/dachcom-digital/ZendSearch) to provide the latest PHP compatibility.
+
 ### Dynamic Search Bundle
 You need to install / enable the Dynamic Search Bundle first.
 Read more about it [here](https://github.com/dachcom-digital/pimcore-dynamic-search#installation).
