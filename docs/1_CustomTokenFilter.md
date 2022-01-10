@@ -101,7 +101,7 @@ dynamic_search:
                                 on_index_time: true
                                 on_query_time: true
                                 locale_aware: true
-                                class: 'AppBundle\Lucene\Filter\MyFilter\MyFilterClass'
+                                class: 'App\Lucene\Filter\MyFilter\MyFilterClass'
 
 ```
 

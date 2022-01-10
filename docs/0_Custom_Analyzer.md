@@ -4,7 +4,7 @@ A Analyzer is used on indexing and query time.
 
 ### Listener
 ```yaml
-AppBundle\EventListener\LuceneAnalyzerListener:
+App\EventListener\LuceneAnalyzerListener:
     autowire: true
     public: false
     tags:
@@ -15,7 +15,7 @@ AppBundle\EventListener\LuceneAnalyzerListener:
 ```php
 <?php
 
-namespace AppBundle\EventListener;
+namespace App\EventListener;
 
 use DsLuceneBundle\Event\AnalzyerEvent;
 
@@ -60,7 +60,7 @@ $ composer require org_heigl/hyphenator:^2.3
 Now, add the listener (basically the same as described above)
 
 ```yaml
-AppBundle\EventListener\LuceneSyllableAnalyzerListener:
+App\EventListener\LuceneSyllableAnalyzerListener:
     autowire: true
     public: false
     tags:
@@ -73,7 +73,7 @@ Finally, add the service:
 ```php
 <?php
 
-namespace AppBundle\EventListener;
+namespace App\EventListener;
 
 use Org\Heigl\Hyphenator;
 use DsLuceneBundle\Event\AnalzyerEvent;
