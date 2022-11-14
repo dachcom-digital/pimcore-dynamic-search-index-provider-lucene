@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('index')
                     ->addDefaultsIfNotSet()
                         ->children()
-                        ->booleanNode('base_path')->defaultValue('%kernel.project_dir%/var/bundles/DsLuceneBundle/index')->end()
+                        ->scalarNode('base_path')->defaultValue('%kernel.project_dir%/var/bundles/DsLuceneBundle/index')->end()
                     ->end()
                 ->end()
             ->end();
