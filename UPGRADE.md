@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+## 2.0.1
+- [BUGFIX] SnowBallStemmingFilter uses not initialized locale [#15](https://github.com/dachcom-digital/pimcore-dynamic-search-index-provider-lucene/issues/15)
+
 ## Migrating from Version 1.x to Version 2.0.0
 
 ### Global Changes
