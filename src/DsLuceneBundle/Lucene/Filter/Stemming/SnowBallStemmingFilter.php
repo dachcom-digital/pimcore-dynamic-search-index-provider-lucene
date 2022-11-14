@@ -10,7 +10,8 @@ class SnowBallStemmingFilter implements TokenFilterInterface
 {
     public const MIN_TOKEN_LENGTH = 1;
 
-    protected string $locale;
+    protected ?string $locale = null;
+
     protected array $cache = [];
     protected array $mapping = [
         'da' => 'Danish',
@@ -96,9 +97,13 @@ class SnowBallStemmingFilter implements TokenFilterInterface
     protected function getStemmingClass(): ?Stemmer
     {
         $locale = $this->locale;
-        if (str_contains($this->locale, '_')) {
-            $localeFragments = explode('_', $this->locale);
+        if (is_string($locale) && str_contains($locale, '_')) {
+            $localeFragments = explode('_', $locale);
             $locale = $localeFragments[0];
+        }
+
+        if ($locale === null) {
+            $locale = 'NONE';
         }
 
         if (isset($this->cache[$locale])) {
