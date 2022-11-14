@@ -103,7 +103,7 @@ class SnowBallStemmingFilter implements TokenFilterInterface
         }
 
         if ($locale === null) {
-            $locale = 'English';
+            $locale = 'en';
         }
 
         if (isset($this->cache[$locale])) {
