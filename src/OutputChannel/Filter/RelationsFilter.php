@@ -19,13 +19,11 @@ class RelationsFilter implements FilterInterface
 
     protected array $options;
     protected string $name;
-    protected LuceneStorageBuilder $storageBuilder;
     protected OutputChannelContextInterface $outputChannelContext;
     protected OutputChannelModifierEventDispatcher $eventDispatcher;
 
-    public function __construct(LuceneStorageBuilder $storageBuilder)
+    public function __construct(protected LuceneStorageBuilder $storageBuilder)
     {
-        $this->storageBuilder = $storageBuilder;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

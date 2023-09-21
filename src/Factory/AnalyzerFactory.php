@@ -14,11 +14,8 @@ use ZendSearch\Lucene\Analysis\TokenFilter\TokenFilterInterface;
 
 class AnalyzerFactory
 {
-    protected EventDispatcherInterface $eventDispatcher;
-
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(protected EventDispatcherInterface $eventDispatcher)
     {
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function build(array $analyzerOptions, ?string $locale = null, bool $isIndexMode = false): AnalyzerInterface

@@ -8,11 +8,8 @@ use DynamicSearchBundle\OutputChannel\Modifier\OutputChannelModifierFilterInterf
 
 class QueryTermBuildFilter implements OutputChannelModifierFilterInterface
 {
-    protected TermModifier $termModifier;
-
-    public function __construct(TermModifier $termModifier)
+    public function __construct(protected TermModifier $termModifier)
     {
-        $this->termModifier = $termModifier;
     }
 
     public function dispatchFilter(OutputChannelAllocatorInterface $outputChannelAllocator, array $options): mixed

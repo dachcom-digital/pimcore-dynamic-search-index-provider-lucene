@@ -7,14 +7,12 @@ use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 
 class AnalzyerEvent extends Event
 {
-    protected ?string $locale;
-    protected bool $isIndexMode;
     protected ?AnalyzerInterface $analyzer = null;
 
-    public function __construct(?string $locale = null, $isIndexMode = false)
-    {
-        $this->locale = $locale;
-        $this->isIndexMode = $isIndexMode;
+    public function __construct(
+        protected ?string $locale = null,
+        protected bool $isIndexMode = false
+    ) {
     }
 
     public function getLocale(): ?string

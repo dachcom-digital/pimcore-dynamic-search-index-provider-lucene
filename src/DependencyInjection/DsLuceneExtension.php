@@ -16,7 +16,7 @@ class DsLuceneExtension extends Extension
 
         $container->setParameter('dynamic_search.ds_lucene.index.base_path', $config['index']['base_path']);
 
-        $loader = new YamlFileLoader($container, new FileLocator([__DIR__ . '/../Resources/config']));
-        $loader->load('services.yml');
+        $loader = new YamlFileLoader($container, new FileLocator([__DIR__ . '/../../config']));
+        $loader->load('services.yaml');
     }
 }
