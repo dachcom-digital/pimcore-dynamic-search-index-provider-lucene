@@ -3,7 +3,7 @@
 namespace DsLuceneBundle\Factory;
 
 use DsLuceneBundle\DsLuceneEvents;
-use DsLuceneBundle\Event\AnalzyerEvent;
+use DsLuceneBundle\Event\AnalyzerEvent;
 use DsLuceneBundle\Lucene\Analyzer\CaseInsensitive;
 use DsLuceneBundle\Lucene\Filter\Stemming\SnowBallStemmingFilter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -30,7 +30,7 @@ class AnalyzerFactory
             $builtLocale = $analyzerOptions['forced_locale'];
         }
 
-        $event = new AnalzyerEvent($locale, $isIndexMode);
+        $event = new AnalyzerEvent($locale, $isIndexMode);
         $this->eventDispatcher->dispatch($event, DsLuceneEvents::BUILD_LUCENE_ANALYZER);
 
         $analyzer = $event->getAnalyzer();

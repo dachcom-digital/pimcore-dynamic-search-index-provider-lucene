@@ -17,14 +17,11 @@ App\EventListener\LuceneAnalyzerListener:
 
 namespace App\EventListener;
 
-use DsLuceneBundle\Event\AnalzyerEvent;
+use DsLuceneBundle\Event\AnalyzerEvent;
 
 class LuceneAnalyzerListener
 {
-    /**
-     * @param AnalzyerEvent $event
-     */
-    public function build(AnalzyerEvent $event)
+    public function build(AnalyzerEvent $event): void
     {
         $analyzer = new MyAwesomeListener();
         $event->setAnalyzer($analyzer);
@@ -76,15 +73,12 @@ Finally, add the service:
 namespace App\EventListener;
 
 use Org\Heigl\Hyphenator;
-use DsLuceneBundle\Event\AnalzyerEvent;
+use DsLuceneBundle\Event\AnalyzerEvent;
 use DsLuceneBundle\Lucene\Analyzer\Syllable;
 
 class LuceneSyllableAnalyzerListener
 {
-    /**
-     * @param AnalzyerEvent $event
-     */
-    public function build(AnalzyerEvent $event)
+    public function build(AnalyzerEvent $event)
     {
         // 
         // Important thing here!
@@ -115,12 +109,7 @@ class LuceneSyllableAnalyzerListener
         $event->setAnalyzer($analyzer);
     }
 
-    /**
-     * @param $locale
-     *
-     * @return string
-     */
-    protected function checkLocale($locale)
+    protected function checkLocale(?string $locale): string
     {
         if (empty($locale)) {
             return 'en';
