@@ -18,15 +18,11 @@ use ZendSearch\Lucene\SearchIndexInterface;
 class LuceneIndexProvider implements IndexProviderInterface
 {
     protected array $options;
-    protected LoggerInterface $logger;
-    protected LuceneStorageBuilder $storageBuilder;
 
     public function __construct(
-        LoggerInterface $logger,
-        LuceneStorageBuilder $storageBuilder
+        protected LoggerInterface $logger,
+        protected LuceneStorageBuilder $storageBuilder
     ) {
-        $this->logger = $logger;
-        $this->storageBuilder = $storageBuilder;
     }
 
     public static function configureOptions(OptionsResolver $resolver): void

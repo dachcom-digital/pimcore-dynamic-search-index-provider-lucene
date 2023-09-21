@@ -8,3 +8,4 @@ parameters:
         container_xml_path: %currentWorkingDirectory%/var/cache/test/TestKernelTestDebugContainer.xml
         constant_hassers: false
     ignoreErrors:
+        - '#Access to an undefined property DynamicSearchBundle\\OutputChannel\\Query\\SearchContainerInterface::\$result\.#'

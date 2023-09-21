@@ -10,11 +10,8 @@ use ZendSearch\Exception\ExceptionInterface;
 
 class LuceneHandler implements LuceneHandlerInterface
 {
-    protected SearchIndexInterface $index;
-
-    public function __construct(SearchIndexInterface $index)
+    public function __construct(protected SearchIndexInterface $index)
     {
-        $this->index = $index;
     }
 
     public function findTermDocuments(int|string $documentId): array
