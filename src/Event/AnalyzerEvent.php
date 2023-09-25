@@ -5,7 +5,7 @@ namespace DsLuceneBundle\Event;
 use Symfony\Contracts\EventDispatcher\Event;
 use ZendSearch\Lucene\Analysis\Analyzer\AnalyzerInterface;
 
-class AnalzyerEvent extends Event
+class AnalyzerEvent extends Event
 {
     protected ?AnalyzerInterface $analyzer = null;
 
