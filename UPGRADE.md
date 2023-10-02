@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+## 3.0.1
+- Fix ZendSearch Version Constraint
+
 ## Migrating from Version 2.x to Version 3.0.0
 
 ### Global Changes
