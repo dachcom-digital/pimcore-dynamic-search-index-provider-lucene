@@ -106,10 +106,6 @@ class AnalyzerFactory
         $isLocaleAware = isset($filterOptions['locale_aware']) && is_bool($filterOptions['locale_aware']) && $filterOptions['locale_aware'];
         $filterClass = $filterOptions['class'] ?? SnowBallStemmingFilter::class;
 
-        if ($filterClass === null) {
-            return null;
-        }
-
         if ($isLocaleAware === true && $currentLocale === null) {
             return null;
         }
