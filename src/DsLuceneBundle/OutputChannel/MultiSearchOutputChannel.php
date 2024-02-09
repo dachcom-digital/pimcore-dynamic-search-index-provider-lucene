@@ -61,6 +61,7 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
 
     public function getMultiSearchResult(MultiSearchContainerInterface $multiSearchContainer): MultiSearchContainerInterface
     {
+        $userLocale = $this->outputChannelContext->getRuntimeQueryProvider()->getUserLocale();
         $indexProviderOptions = $this->outputChannelContext->getIndexProviderOptions();
 
         foreach ($multiSearchContainer->getSearchContainer() as $searchContainer) {
@@ -68,7 +69,7 @@ class MultiSearchOutputChannel implements OutputChannelInterface, MultiOutputCha
             $query = $searchContainer->getQuery();
 
             $eventData = $this->eventDispatcher->dispatchAction('build_index', [
-                'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE)
+                'index' => $this->storageBuilder->getLuceneIndex($indexProviderOptions, ConfigurationInterface::INDEX_BASE_STABLE, $userLocale)
             ]);
 
             /** @var Lucene\SearchIndexInterface $index */
