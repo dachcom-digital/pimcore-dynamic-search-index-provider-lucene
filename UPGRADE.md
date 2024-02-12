@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+## 2.0.3
+- [BUGFIX] Fix type-hint in LuceneException constructor to match parent Exception class [#26](https://github.com/dachcom-digital/pimcore-dynamic-search-index-provider-lucene/issues/26)
+
 ## 2.0.2
 - [BUGFIX] Pass locale to lucene index in multi search context
 
