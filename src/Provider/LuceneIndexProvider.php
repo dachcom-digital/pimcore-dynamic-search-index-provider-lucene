@@ -177,7 +177,7 @@ class LuceneIndexProvider implements IndexProviderInterface
         $luceneHandler = new LuceneHandler($this->getStableIndex($this->getLocaleFromIndexDocumentResource($indexDocument)));
         $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
-        if (!is_array($termDocuments) || count($termDocuments) === 0) {
+        if (count($termDocuments) === 0) {
             $createNewDocumentMessage = $this->options['force_adding_document'] === true
                 ? ' Going to add new document (options "force_adding_document" is set to "true")'
                 : ' Going to skip adding new document (options "force_adding_document" is set to "false")';
@@ -220,7 +220,7 @@ class LuceneIndexProvider implements IndexProviderInterface
         $luceneHandler = new LuceneHandler($this->getStableIndex());
         $termDocuments = $luceneHandler->findTermDocuments($indexDocument->getDocumentId());
 
-        if (!is_array($termDocuments) || count($termDocuments) === 0) {
+        if (count($termDocuments) === 0) {
             $this->logger->error(
                 sprintf('document with id "%s" could not be found. Skipping deletion...', $indexDocument->getDocumentId()),
                 DsLuceneBundle::PROVIDER_NAME,
