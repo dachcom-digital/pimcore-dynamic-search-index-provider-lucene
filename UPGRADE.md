@@ -1,8 +1,9 @@
 # Upgrade Notes
 
+## 3.0.4
+- [LICENSE] Dual-License with GPL and Dachcom Commercial License (DCL) added
 ## 3.0.3
 - [BUGFIX] Fix type-hint in LuceneException constructor to match parent Exception class [#26](https://github.com/dachcom-digital/pimcore-dynamic-search-index-provider-lucene/issues/26)
-
 ## 3.0.2
 - [BUGFIX] Pass locale to lucene index in multi search context
 

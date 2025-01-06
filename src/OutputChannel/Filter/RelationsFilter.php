@@ -139,10 +139,6 @@ class RelationsFilter implements FilterInterface
 
     protected function filterInMainQuery(array $result, array $filterNames): array
     {
-        if (!is_array($result)) {
-            return [];
-        }
-
         return $this->buildResultArray($result, $filterNames);
     }
 

@@ -14,30 +14,31 @@ class TermModifier
      */
     public function splitTerm(string $query, int $minPrefixLength = 3, int $maxTerms = 0): array
     {
-        $terms = array_values(array_filter(explode(' ', $query), function ($t) use ($minPrefixLength) {
+        $cleanTermBlocks = [];
+
+        $terms = array_values(array_filter(explode(' ', $query), static function ($t) use ($minPrefixLength) {
             return strlen($t) >= $minPrefixLength;
         }));
 
-        $cleanTerms = [];
-
         foreach ($terms as $term) {
             preg_match_all('/[\p{L}\p{N}]+/u', $term, $match, PREG_OFFSET_CAPTURE);
-
-            if (!is_array($match[0])) {
-                $cleanTerms[] = $term;
-
-                continue;
-            }
 
             $specialTerms = [];
             foreach ($match[0] as $matchTerm) {
                 $specialTerms[] = $matchTerm[0];
             }
 
-            $cleanTerms = array_merge($cleanTerms, array_values(array_filter($specialTerms, function ($t) use ($minPrefixLength) {
-                return strlen($t) >= $minPrefixLength;
-            })));
+            $cleanTermBlocks[] = array_values(
+                array_filter(
+                    $specialTerms,
+                    static function ($t) use ($minPrefixLength) {
+                        return strlen($t) >= $minPrefixLength;
+                    }
+                )
+            );
         }
+
+        $cleanTerms = array_merge([], ...$cleanTermBlocks);
 
         return $maxTerms === 0 ? $cleanTerms : array_slice($cleanTerms, 0, $maxTerms);
     }

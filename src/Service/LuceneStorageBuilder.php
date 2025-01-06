@@ -50,10 +50,6 @@ class LuceneStorageBuilder
             throw new LuceneException(sprintf('Unable to create lucene database "%s". Error was: %s', $databaseName, $e), $e);
         }
 
-        if (!$index instanceof SearchIndexInterface) {
-            throw new LuceneException(sprintf('Unable to create lucene database "%s"', $databaseName));
-        }
-
         return $this->getLuceneIndex($providerOptions);
     }
 
